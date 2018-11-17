@@ -1,6 +1,6 @@
 (* ::Package:: *)
 
-<< (NotebookDirectory[] <> "wldata.mx");
+<< (NotebookDirectory[] <> "../dist/wldata.mx");
 << (NotebookDirectory[] <> "utilities.wl");
 
 
@@ -76,3 +76,6 @@ util`replaceFile["wolfram.sublime-syntax.yaml-macros", RuleDelayed[
 		$dataset
 	]
 ]];
+
+
+Export[util`resolveFileName["../dist/macros.json"], $dataset];
