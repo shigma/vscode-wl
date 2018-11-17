@@ -1,0 +1,41 @@
+{
+  "name": "wl",
+  "displayName": "wl",
+  "description": "Wolfram Language support for Visual Studio Code.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.29.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "publisher": "shigma",
+  "author": "shigma <1700011071@pku.edu.cn>",
+  "contributes": {
+    "languages": [
+      {
+        "id": "wolfram",
+        "aliases": [
+          "wolfram language"
+        ],
+        "extensions": [
+          ".wl",
+          ".m",
+          ".nb",
+          ".wls"
+        ],
+        "configuration": "./language.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "wolfram",
+        "scopeName": "source.wolfram",
+        "path": "./syntaxes/wolfram.tmLanguage.json"
+      }
+    ]
+  },
+  "devDependencies": {
+    "js-yaml": "^3.12.0"
+  }
+}
