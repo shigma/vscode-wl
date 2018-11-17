@@ -11,6 +11,9 @@
   ],
   "publisher": "shigma",
   "author": "shigma <1700011071@pku.edu.cn>",
+  "scripts": {
+    "build": "node build/syntax"
+  },
   "contributes": {
     "languages": [
       {
