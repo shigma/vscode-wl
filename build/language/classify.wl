@@ -72,4 +72,7 @@ classify[Keys[#] -> "LocalVariables" /. Values[#] & /@ wl`usageDictionary,
 Export[util`resolveFileName["../../dist/macros.json"], $dataset];
 
 
+Export[util`resolveFileName["../../dist/namespace.json"], wl`namespace];
+
+
 Export[util`resolveFileName["../../dist/usages.json"], Keys[#] -> ("Definition" /. Values[#]) & /@ wl`usageDictionary];

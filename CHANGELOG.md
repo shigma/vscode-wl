@@ -1,7 +1,5 @@
 # Change Log
-All notable changes to the "wl" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## v1.1
 
-## [Unreleased]
-- Initial release
+- Document display on hover and on completion.

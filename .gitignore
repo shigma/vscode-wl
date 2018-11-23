@@ -2,7 +2,6 @@ node_modules
 package-lock.json
 *.vsix
 test.*
-/syntaxes
 /dist
 /out
 vsc-extension-quickstart.md

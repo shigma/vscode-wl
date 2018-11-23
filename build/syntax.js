@@ -154,6 +154,6 @@ delete syntax.variables
 delete syntax.contexts
 
 fs.writeFileSync(
-  util.fullPath('syntaxes/wolfram.tmLanguage.json'),
+  util.fullPath('out/syntax.json'),
   JSON.stringify(syntax),
 )
