@@ -4,4 +4,5 @@ package-lock.json
 test.*
 /syntaxes
 /dist
+/out
 vsc-extension-quickstart.md

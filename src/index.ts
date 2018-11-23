@@ -1,68 +1,29 @@
-import * as vscode from 'vscode';
+import * as vscode from 'vscode'
+
+const WORD_PATTERN = /([$a-zA-Z]+[$0-9a-zA-Z]*`)*[$a-zA-Z]+[$0-9a-zA-Z]*/
+
+const dictionary = require('../dist/usages')
+const namespace = Object.keys(dictionary)
 
 export function activate(context: vscode.ExtensionContext) {
 
-	let provider1 = vscode.languages.registerCompletionItemProvider('plaintext', {
-
-		provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
-
-			// a simple completion item which inserts `Hello World!`
-			const simpleCompletion = new vscode.CompletionItem('Hello World!');
-
-			// a completion item that inserts its text as snippet,
-			// the `insertText`-property is a `SnippetString` which we will
-			// honored by the editor.
-			const snippetCompletion = new vscode.CompletionItem('Good part of the day');
-			snippetCompletion.insertText = new vscode.SnippetString('Good ${1|morning,afternoon,evening|}. It is ${1}, right?');
-			snippetCompletion.documentation = new vscode.MarkdownString("Inserts a snippet that lets you select the _appropriate_ part of the day for your greeting.");
-
-			// a completion item that can be accepted by a commit character,
-			// the `commitCharacters`-property is set which means that the completion will
-			// be inserted and then the character will be typed.
-			const commitCharacterCompletion = new vscode.CompletionItem('console');
-			commitCharacterCompletion.commitCharacters = ['.'];
-			commitCharacterCompletion.documentation = new vscode.MarkdownString('Press `.` to get `console.`');
-
-			// a completion item that retriggers IntelliSense when being accepted,
-			// the `command`-property is set which the editor will execute after 
-			// completion has been inserted. Also, the `insertText` is set so that 
-			// a space is inserted after `new`
-			const commandCompletion = new vscode.CompletionItem('new');
-			commandCompletion.kind = vscode.CompletionItemKind.Keyword;
-			commandCompletion.insertText = 'new ';
-			commandCompletion.command = { command: 'editor.action.triggerSuggest', title: 'Re-trigger completions...' };
-
-			// return all completion items as array
-			return [
-				simpleCompletion,
-				snippetCompletion,
-				commitCharacterCompletion,
-				commandCompletion
-			];
+	const builtinSymbolsProvider = vscode.languages.registerCompletionItemProvider('wolfram', {
+		provideCompletionItems(document, position, token, context) {
+			return namespace.map(name => {
+				const completion = new vscode.CompletionItem(name)
+				completion.documentation = new vscode.MarkdownString(dictionary[name])
+				return completion
+			})
 		}
-	});
+	})
 
-	const provider2 = vscode.languages.registerCompletionItemProvider(
-		'plaintext',
-		{
-			provideCompletionItems(document: vscode.TextDocument, position: vscode.Position) {
+	vscode.languages.registerHoverProvider('wolfram', {
+		provideHover(document, position, token) {
+			const word = document.getText(document.getWordRangeAtPosition(position, WORD_PATTERN))
+			if (!(word in dictionary)) return
+			return new vscode.Hover(dictionary[word])
+		}
+	})
 
-				// get all text until the `position` and check if it reads `console.`
-				// and iff so then complete if `log`, `warn`, and `error`
-				let linePrefix = document.lineAt(position).text.substr(0, position.character);
-				if (!linePrefix.endsWith('console.')) {
-					return undefined;
-				}
-
-				return [
-					new vscode.CompletionItem('log', vscode.CompletionItemKind.Method),
-					new vscode.CompletionItem('warn', vscode.CompletionItemKind.Method),
-					new vscode.CompletionItem('error', vscode.CompletionItemKind.Method),
-				];
-			}
-		},
-		'.' // triggered whenever a '.' is being typed
-	);
-
-	context.subscriptions.push(provider1, provider2);
+	context.subscriptions.push(builtinSymbolsProvider)
 }

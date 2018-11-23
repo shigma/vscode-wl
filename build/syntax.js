@@ -45,7 +45,7 @@ const nested = (type, scope = type) => ({
 const schema = yaml.Schema.create([
   new yaml.Type('!builtin', {
     kind: 'scalar',
-    construct: source => `(?:System\`)?({{${source}}})(?![$\`])\\b`
+    construct: source => `(?<!{{word_character}})(?:System\`)?({{${source}}})(?!{{word_character}})`
   }),
   new yaml.Type('!function', {
     kind: 'mapping',
@@ -127,20 +127,33 @@ const variables = Object.assign(
   transfer((item, _, variables) => resolve(variables, item))(syntax.variables)
 )
 
-syntax.repository = transfer('patterns', function traverse(rules) {
+function traverseRules(rules) {
+  if (!rules) return
   rules.forEach(rule => {
     rule.match = resolve(variables, rule.match)
     rule.begin = resolve(variables, rule.begin)
     rule.end = resolve(variables, rule.end)
-    if (rule.patterns) traverse(rule.patterns)
+    traverseRules(rule.patterns)
+    traverseCaptures(rule.captures)
+    traverseCaptures(rule.endCaptures)
+    traverseCaptures(rule.beginCaptures)
   })
   return rules
-})(syntax.contexts)
+}
+
+function traverseCaptures(captures) {
+  if (!captures) return
+  for (const index in captures) {
+    traverseRules(captures[index].patterns)
+  }
+}
+
+syntax.repository = transfer('patterns', traverseRules)(syntax.contexts)
 
 delete syntax.variables
 delete syntax.contexts
 
 fs.writeFileSync(
   util.fullPath('syntaxes/wolfram.tmLanguage.json'),
-  JSON.stringify(syntax, null, 2),
+  JSON.stringify(syntax),
 )

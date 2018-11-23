@@ -14,7 +14,7 @@ Function[usages,
 	usageAbsentSymbols = Complement[namespace, usagePresentSymbols];
 ] @ util`ruleMap[Block[{symbol = Symbol[#]},
 	Join[SyntaxInformation[symbol], {
-		"Definition" -> MessageName[Evaluate[symbol], "usage"],
+		"Definition" -> ToExpression[# <> "::usage"],
 		"Attributes" -> Attributes[Evaluate[symbol]]
 	}]
 ] &, namespace];
@@ -27,16 +27,7 @@ documentedLists = Keys[#] -> Values[#] /@ util`getGuideText["ListingOf" <> util`
 };
 
 
-DumpSave[NotebookDirectory[] <> "wldata.mx", "wl`"];
-
-
-Export[util`resolveFileName["usages.json"], wl`usageDictionary];
-
-
-util`writeFile["../completions.sublime-completions", util`toJSON[{
-	"scope" -> "source.wolfram",
-	"completions" -> Sort[StringReplace[StartOfString ~~ "$" -> ""] /@ wl`namespace]
-}]];
+DumpSave[NotebookDirectory[] <> "../dist/wldata.mx", "wl`"];
 
 
 End[];

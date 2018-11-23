@@ -9,7 +9,9 @@ variables:
   number: (?:\d+\.?|\.\d)\d*
   symbol: '[$a-zA-Z]+[$0-9a-zA-Z]*'
   identifier: (?:{{symbol}}`)*{{symbol}}
+  pattern_ending: '[:-]>|:?=|\/[;.\/]|[\]\)\},;&]|>>|<<|[\n\r]'
 
+  word_character: '[0-9a-zA-Z$`]'
   escaped_character: \\[ !"%&()*+/@\\^_`bfnrt<>]
   encoded_character: \\[0-7]{3}|\\\.[0-9A-Fa-f]{2}|\\:[0-9A-Fa-f]{4}
   regexp_character: .|\\\\[\S]|{{escaped_character}}|{{encoded_character}}
@@ -39,13 +41,15 @@ contexts:
     - include: '#nested'
 
   comments:
-    - match: (\(\*\s*)(::)({{alnum}}+)(::)(\s*\*\))
+    - match: (\(\*\s*)(::(?:{{alnum}}+::)+)(\s*\*\))
+      name: comment.line.cell.wolfram
       captures: !raw
-        1: comment.line.wolfram
-        2: constant.numeric.line-number.find-in-files
-        3: constant.language.wolfram
-        4: constant.numeric.line-number.find-in-files
-        5: comment.line.wolfram
+        1: punctualation.definition.comment.begin.wolfram
+        2: 
+          patterns:
+            - match: '{{alnum}}+'
+              name: constant.language.style.wolfram
+        3: punctualation.definition.comment.end.wolfram
     - include: '#comment-block'
 
   comment-block:
@@ -89,16 +93,16 @@ contexts:
     # strings
     - begin: \"
       end: \"
-      beginCaptures: !all string.quoted.wolfram punctuation.definition.string.begin.wolfram
-      endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
-      name: meta.string.wolfram
+      beginCaptures: !all punctuation.definition.string.begin.wolfram
+      endCaptures: !all punctuation.definition.string.end.wolfram
+      name: string.quoted.wolfram
       patterns: !push string
 
   string:
     # box representation
     - begin: \\!\\\(
-      end: \\\)|(?=")
-      name: meta.string-box.wolfram
+      end: \\\)
+      name: meta.embedded.string-box.wolfram
       captures: !all keyword.operator.string-box.wolfram
       patterns:
         - include: '#string-nested'
@@ -130,8 +134,9 @@ contexts:
   string-nested:
     - begin: \\\"
       end: \\\"
-      beginCaptures: !all string.quoted.wolfram punctuation.definition.string.begin.wolfram
-      endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
+      beginCaptures: !all punctuation.definition.string.begin.wolfram
+      endCaptures: !all punctuation.definition.string.end.wolfram
+      name: string.quoted.wolfram
       patterns: !push string
 
   string-template:
@@ -139,7 +144,7 @@ contexts:
       name: variable.parameter.wolfram
     - begin: <\*
       end: \*>|(?=")
-      name: meta.template-expression.wolfram
+      name: meta.embedded.template-expression.wolfram
       captures: !all keyword.operator.template-expression.wolfram
       patterns:
         - include: '#string-nested'
@@ -148,9 +153,9 @@ contexts:
 
   regular-expressions:
     - match: \\\\[dDsSwW]
-      name: storage.class.character.regexp.wolfram
+      name: storage.type.character.regexp.wolfram
     - match: (\[\^?\[)(:(?:{{character_class}}):)(\]\])
-      captures:
+      captures: !raw
         1: storage.class.character.regexp.wolfram
         2: constant.other.class.regexp.wolfram
         3: storage.class.character.regexp.wolfram
@@ -175,11 +180,11 @@ contexts:
           name: constant.other.range.regexp.wolfram
         - include: '#string'
     - begin: (\()(\?([:=!]|<[=!]))?
-      beginCaptures:
+      beginCaptures: !raw
         1: keyword.control.group.regexp.wolfram
         2: constant.character.assertion.regexp.wolfram
       end: \)
-      endCaptures: keyword.control.group.regexp.wolfram
+      endCaptures: !all keyword.control.group.regexp.wolfram
       name: meta.group.regexp.wolfram
       patterns: !push regular-expressions
     - match: \\\\[\S]
@@ -199,6 +204,7 @@ contexts:
       name: keyword.operator.box-constructor.wolfram
     - include: '#expressions'
   
+  # See: tutorial/OperatorInputForms
   shorthand:
     # Out
     - match: '%(\d*|%*)'
@@ -218,6 +224,12 @@ contexts:
       captures: !raw
         1: keyword.operator.MessageName.wolfram
         2: string.unquoted.wolfram
+    
+    # Get & Put & PutAppend
+    - match: (<<|>>>?) *([a-zA-Z0-9`/.!-_:$*~?\\]+)(?=[\s\)\]\},;])
+      captures: !raw
+        1: keyword.operator.flow.wolfram
+        2: string.unquoted.filename.wolfram
 
     # Infix
     - begin: '~'
@@ -229,7 +241,7 @@ contexts:
       name: meta.infix.wolfram
       patterns: !push expressions
 
-    # Postfix and Composition and RightComposition
+    # Postfix & Composition & RightComposition
     - match: (//|[@/]\*)\s*({{identifier}})
       captures: !raw
         1: keyword.operator.call.wolfram
@@ -250,7 +262,7 @@ contexts:
       name: keyword.operator.condition.wolfram
     - match: (\+\+|--|[+\-*/^])
       name: keyword.operator.arithmetic.wolfram
-    - match: (>>>?|<<<?)
+    - match: (>>>?|<<)
       name: keyword.operator.flow.wolfram
     - match: (<>|~~)
       name: keyword.operator.string.wolfram
@@ -272,13 +284,15 @@ contexts:
       beginCaptures: !raw
         1: variable.parameter.wolfram
         2: keyword.operator.Pattern.wolfram
-      end: (?=[:-]>|:?=|\/[;.\/]|[\]\)\},;&]|>>|<<|[\n\r])
+      end: (?={{pattern_ending}})
       name: meta.pattern.wolfram
       patterns: !push post-pattern
 
   post-pattern:
-    - match: \?
-      name: keyword.operator.PatternTest.wolfram
+    - match: (\?)\s*({{identifier}}(?=\s*(:|{{pattern_ending}})))?
+      captures: !raw
+        1: keyword.operator.PatternTest.wolfram
+        2: !function-identifier
     - match: :(?=[^:>=])
       name: keyword.operator.Optional.wolfram
     - include: '#no-pattern'
@@ -293,9 +307,10 @@ contexts:
       target: string_template_functions
       context:
         - begin: '"'
-          beginCaptures: !all string.quoted.wolfram punctuation.definition.string.begin.wolfram
+          beginCaptures: !all punctuation.definition.string.begin.wolfram
           end: '"'
-          endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
+          endCaptures: !all punctuation.definition.string.end.wolfram
+          name: string.quoted.wolfram
           patterns: !push string-template
         - include: '#expressions'
 
@@ -304,9 +319,10 @@ contexts:
       target: regular_expression_functions
       context:
         - begin: '"'
-          beginCaptures: !all string.quoted.wolfram punctuation.definition.string.begin.wolfram
+          beginCaptures: !all punctuation.definition.string.begin.wolfram
           end: '"'
-          endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
+          endCaptures: !all punctuation.definition.string.end.wolfram
+          name: string.quoted.wolfram
           patterns: !push regular-expressions
         - include: '#expressions'
     
@@ -383,7 +399,7 @@ contexts:
         2: variable.parameter.default.wolfram
         3: variable.parameter.blank.wolfram
         4: variable.parameter.head.wolfram
-      end: (?=[:-]>|:?=|\/[;.\/]|[\]\)\},;&]|>>|<<|[\n\r])
+      end: (?={{pattern_ending}})
       contentName: meta.pattern.wolfram
       patterns: !push post-pattern
 
