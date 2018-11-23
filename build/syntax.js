@@ -29,9 +29,13 @@ const bracketMap = {
 
 const nested = (type, scope = type) => ({
   begin: bracketMap[type][0],
-  beginCaptures: `punctuation.section.${type}.begin.wolfram`,
+  beginCaptures: {
+    0: { name: `punctuation.section.${type}.begin.wolfram` }
+  },
   end: bracketMap[type][1],
-  endCaptures: `punctuation.section.${type}.end.wolfram`,
+  endCaptures: {
+    0: { name: `punctuation.section.${type}.end.wolfram` }
+  },
   name: `meta.${scope}.wolfram`,
   patterns: [{
     include: '#expressions'
@@ -57,11 +61,23 @@ const schema = yaml.Schema.create([
         0: { name: 'punctuation.section.brackets.end.wolfram' },
       },
       contentName: 'meta.block.wolfram',
-      patterns: [
-        ...(context || []),
-        { include: '#expressions' },
-      ],
+      patterns: context || [{ include: '#expressions' }],
     })
+  }),
+  new yaml.Type('!match-first', {
+    kind: 'mapping',
+    construct(rule) {
+      const escapes = rule.escapes || '\\]'
+      const end = `(?=[${escapes}])`
+      delete rule.escapes
+      rule.end = rule.end || end
+      rule.patterns = rule.patterns || [{ include: '#expressions' }]
+      return [rule, {
+        begin: `(?=[^${escapes}])`,
+        end: `(?=[${escapes}])`,
+        patterns: [{ include: '#expressions' }],
+      }]
+    }
   }),
   new yaml.Type('!function-identifier', {
     kind: 'scalar',

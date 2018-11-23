@@ -9,20 +9,31 @@
   "categories": [
     "Programming Languages"
   ],
+  "main": "out/index.js",
   "publisher": "shigma",
   "author": "shigma <1700011071@pku.edu.cn>",
   "scripts": {
-    "build": "node build/syntax"
+    "build": "node build/syntax",
+    "prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install"
   },
+  "activationEvents": [
+		"*"
+	],
   "contributes": {
     "languages": [
       {
         "id": "wolfram",
         "aliases": [
-          "wolfram language"
+          "Wolfram Language",
+          "Mathematica"
         ],
         "extensions": [
           ".wl",
+          ".wlt",
+          ".mt",
           ".m",
           ".nb",
           ".wls"
@@ -36,9 +47,18 @@
         "scopeName": "source.wolfram",
         "path": "./syntaxes/wolfram.tmLanguage.json"
       }
+    ],
+    "snippets": [
+      {
+        "language": "wolfram",
+        "path": "./syntaxes/wolfram.tmSnippets.json"
+      }
     ]
   },
   "devDependencies": {
-    "js-yaml": "^3.12.0"
+    "@types/node": "^10.12.9",
+    "js-yaml": "^3.12.0",
+    "typescript": "^3.1.6",
+    "vscode": "^1.1.21"
   }
 }

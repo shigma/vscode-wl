@@ -16,7 +16,7 @@ variables:
 
   regular_expression_functions: RegularExpression
   string_template_functions: StringTemplate|TemplateApply
-  scoping_functions: Block|Module|With|Function|DynamicModule
+  scoping_functions: Block|Module|With|DynamicModule
   character_class: alnum|alpha|ascii|blank|cntrl|digit|graph|lower|print|punct|space|upper|word|xdigit
   numeric_constants: Catalan|Degree|E|EulerGamma|Glaisher|GoldenAngle|GoldenRatio|I|Khinchin|MachinePrecision|Pi
 
@@ -97,7 +97,7 @@ contexts:
   string:
     # box representation
     - begin: \\!\\\(
-      end: \\\)
+      end: \\\)|(?=")
       name: meta.string-box.wolfram
       captures: !all keyword.operator.string-box.wolfram
       patterns:
@@ -113,7 +113,8 @@ contexts:
       name: constant.character.built-in.wolfram
 
     # invalid characters
-    - match: !no-whitespace |-
+    - match: |-
+        (?x)
         \\[0-7]{1,2}(?=[^0-7])|
         \\\.[0-9A-Fa-f]?(?=[^0-9A-Fa-f])|
         \\:[0-9A-Fa-f]{0,3}(?=[^0-9A-Fa-f])
@@ -129,14 +130,15 @@ contexts:
   string-nested:
     - begin: \\\"
       end: \\\"
-      captures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
+      beginCaptures: !all string.quoted.wolfram punctuation.definition.string.begin.wolfram
+      endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
       patterns: !push string
 
   string-template:
     - match: \`\w*\`
       name: variable.parameter.wolfram
     - begin: <\*
-      end: \*>
+      end: \*>|(?=")
       name: meta.template-expression.wolfram
       captures: !all keyword.operator.template-expression.wolfram
       patterns:
@@ -285,6 +287,87 @@ contexts:
     - match: !builtin built_in_functions
       name: support.function.wolfram
 
+  functions:
+    - !function
+      type: string-template
+      target: string_template_functions
+      context:
+        - begin: '"'
+          beginCaptures: !all string.quoted.wolfram punctuation.definition.string.begin.wolfram
+          end: '"'
+          endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
+          patterns: !push string-template
+        - include: '#expressions'
+
+    - !function
+      type: regular-expression
+      target: regular_expression_functions
+      context:
+        - begin: '"'
+          beginCaptures: !all string.quoted.wolfram punctuation.definition.string.begin.wolfram
+          end: '"'
+          endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
+          patterns: !push regular-expressions
+        - include: '#expressions'
+    
+    - !function
+      type: scoping
+      target: scoping_functions
+      context: !match-first
+        begin: \s*({)
+        beginCaptures: !raw
+          1: punctuation.section.braces.begin.wolfram
+        end: (?=\])|}
+        endCaptures: !all punctuation.section.braces.end.wolfram
+        name: meta.braces.wolfram
+        patterns:
+          - begin: (?=[^\]}])
+            end: (?=[\]}])|,
+            endCaptures: !all punctuation.separator.sequence.wolfram
+            contentName: meta.scoped-variable.wolfram
+            patterns: !match-first
+              escapes: \]},
+              begin: \s*({{identifier}})
+              beginCaptures: !raw
+                1: variable.parameter.wolfram
+    
+    - !function
+      type: functional-first-param
+      target: functional_first_param
+      context: !match-first
+        begin: \s*({{identifier}})(?=\s*[,\]])
+        beginCaptures:
+          1: !function-identifier
+    
+    - !function
+      type: functional-last-param
+      target: functional_last_param
+      context:
+        - match: '{{identifier}}(?=\s*\])'
+          captures:
+            0: !function-identifier
+        - begin: (?=[^\]])
+          end: (?=\])
+          patterns:
+            - match: (,)\s*({{identifier}})(?=\s*\])
+              captures: !raw
+                1: punctuation.separator.sequence.wolfram
+                2: !function-identifier
+            - include: '#expressions'
+
+    - !function
+      target: identifier
+      identifier: !function-identifier
+
+    - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
+      captures:
+        1: !function-identifier
+
+  declarations:
+    - match: ({{identifier}})(?=\s*:?=\s*Function\s*\[(?!\s*\[))
+      captures:
+        0: !function-identifier
+
   variables:
     # parameters
     - begin: !no-whitespace |-
@@ -313,87 +396,6 @@ contexts:
     - match: (#[a-zA-Z]{{alnum}}*|#\d*)
       name: variable.parameter.wolfram
   
-  functions:
-    - !function
-      type: string-template
-      target: string_template_functions
-      context:
-        - begin: '"'
-          beginCaptures: !all string.quoted.wolfram punctuation.definition.string.begin.wolfram
-          end: '"'
-          endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
-          patterns: !push string-template
-
-    - !function
-      type: regular-expression
-      target: regular_expression_functions
-      context:
-        - begin: '"'
-          beginCaptures: !all string.quoted.wolfram punctuation.definition.string.begin.wolfram
-          end: '"'
-          endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
-          patterns: !push regular-expressions
-    
-    # scoping functions
-    # - match: !function scoping_functions
-    #   captures:
-    #     1: variable.function.scoping.wolfram
-    #     2: punctuation.section.brackets.begin.wolfram
-    #   contentName: meta.block.wolfram
-    #   patterns:
-    #     - match: \{
-    #       name: punctuation.section.braces.begin.wolfram
-    #       set: [localized, local]
-    #     - include: meta-block
-
-    - !function
-      target: identifier
-      identifier: !function-identifier
-
-    - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
-      capture:
-        0: !function-identifier
-
-  declarations:
-    - begin: |-
-        (?x)
-        {{identifier}}
-        (?=
-          \s*
-          (
-            \[(?!\[)
-            (?>
-              [^\[\]]+|
-              \g<-1>
-            )*
-            \]
-          )
-          \s*(?:\/;.*)?\s*:=
-        )
-      beginCaptures:
-        0: !function-identifier
-      end: (?=[^\[])
-      patterns:
-        - !nested brackets arguments
-
-    - match: |-
-        (?x)
-        {{identifier}}
-        (?=
-          \s*:?=\s*
-          (
-            [^\(\)]+|
-            \((?>\g<-1>)*\)
-          )*
-          &(;|$)
-        )
-      captures:
-        0: !function-identifier
-
-    - match: ({{identifier}})(?=\s*:?=\s*Function\s*\[(?!\s*\[))
-      captures:
-        0: !function-identifier
-
   nested:
     - match: ','
       name: punctuation.separator.sequence.wolfram

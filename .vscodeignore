@@ -1,8 +1,9 @@
 .vscode/**
 .vscode-test/**
+.gitattributes
 .gitignore
 vsc-extension-quickstart.md
 test.*
-/build
-/src
-/dist
+build/**
+src/**
+dist/**
