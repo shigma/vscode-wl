@@ -185,5 +185,5 @@ delete syntax.contexts
 
 fs.writeFileSync(
   util.fullPath('out/syntax.json'),
-  JSON.stringify(syntax),
+  JSON.stringify(syntax, null, 2),
 )
