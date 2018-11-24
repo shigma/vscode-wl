@@ -27,7 +27,7 @@ const bracketMap = {
   association: ['<\\|', '\\|>'],
 }
 
-const nested = (type, scope = type) => ({
+const makeNested = (type, scope = type) => ({
   begin: bracketMap[type][0],
   beginCaptures: {
     0: { name: `punctuation.section.${type}.begin.wolfram` }
@@ -42,6 +42,39 @@ const nested = (type, scope = type) => ({
   }]
 })
 
+function makeMatchFirst(rules) {
+  let escapes = '\\]'
+  const index = rules.findIndex(rule => rule.escapes)
+  if (index >= 0) escapes = rules[index].escapes
+  return [
+    ...rules.filter(rule => !rule.escapes).map(rule => {
+      rule.end = rule.end || `(?=[${escapes}])`
+      rule.patterns = rule.patterns || [{ include: '#expressions' }]
+      return rule
+    }),
+    {
+      begin: `(?=[^${escapes}])`,
+      end: `(?=[${escapes}])`,
+      patterns: [{ include: '#expressions' }],
+    }
+  ]
+}
+
+const makeFunction = ({ target, context, type, identifier }) => ({
+  begin: `(${target})\\s*(\\[(?!\\[))`,
+  beginCaptures: {
+    1: identifier ||
+      { name: `${ type ? 'support.function.' + type : 'entity.name.function' }.wolfram` },
+    2: { name: 'punctuation.section.brackets.begin.wolfram' },
+  },
+  end: '\\]',
+  endCaptures: {
+    0: { name: 'punctuation.section.brackets.end.wolfram' },
+  },
+  contentName: 'meta.block.wolfram',
+  patterns: context || [{ include: '#expressions' }],
+})
+
 const schema = yaml.Schema.create([
   new yaml.Type('!builtin', {
     kind: 'scalar',
@@ -49,34 +82,27 @@ const schema = yaml.Schema.create([
   }),
   new yaml.Type('!function', {
     kind: 'mapping',
-    construct: ({ target, context, type, identifier }) => ({
-      begin: `({{${target}}})\\s*(\\[(?!\\[))`,
-      beginCaptures: {
-        1: identifier ||
-          { name: `${ type ? 'support.function.' + type : 'entity.name.function' }.wolfram` },
-        2: { name: 'punctuation.section.brackets.begin.wolfram' },
-      },
-      end: '\\]',
-      endCaptures: {
-        0: { name: 'punctuation.section.brackets.end.wolfram' },
-      },
-      contentName: 'meta.block.wolfram',
-      patterns: context || [{ include: '#expressions' }],
-    })
+    construct: makeFunction
   }),
   new yaml.Type('!match-first', {
+    kind: 'sequence',
+    construct: makeMatchFirst
+  }),
+  new yaml.Type('!string-function', {
     kind: 'mapping',
-    construct(rule) {
-      const escapes = rule.escapes || '\\]'
-      const end = `(?=[${escapes}])`
-      delete rule.escapes
-      rule.end = rule.end || end
-      rule.patterns = rule.patterns || [{ include: '#expressions' }]
-      return [rule, {
-        begin: `(?=[^${escapes}])`,
-        end: `(?=[${escapes}])`,
-        patterns: [{ include: '#expressions' }],
-      }]
+    construct({ target, type, context }) {
+      return makeFunction({
+        target,
+        type,
+        context: makeMatchFirst([{
+          begin: '"',
+          beginCaptures: { 0: { name: 'punctuation.definition.string.begin.wolfram' } },
+          end: '"',
+          endCaptures: { 0: { name: 'punctuation.definition.string.end.wolfram' } },
+          name: `string.quoted.${type}.wolfram`,
+          patterns: context,
+        }])
+      })
     }
   }),
   new yaml.Type('!function-identifier', {
@@ -104,12 +130,12 @@ const schema = yaml.Schema.create([
   }),
   new yaml.Type('!nested', {
     kind: 'scalar',
-    construct: source => nested(...source.split(' '))
+    construct: source => makeNested(...source.split(' '))
   }),
 ])
 
 const syntax = yaml.safeLoad(
-  fs.readFileSync(util.fullPath('src/syntaxes/wolfram.yaml')),
+  fs.readFileSync(util.fullPath('src/syntax.yaml')),
   { schema },
 )
 
@@ -122,10 +148,14 @@ function resolve(variables, regex) {
   return output
 }
 
+const macros = require('../dist/macros')
+
 const variables = Object.assign(
-  transfer(list => list.join('|').replace(/\$/g, '\\$'))(require('../dist/macros')),
+  transfer(list => list.join('|').replace(/\$/g, '\\$'))(macros),
   transfer((item, _, variables) => resolve(variables, item))(syntax.variables)
 )
+
+// console.log(macros.functional_first_param.filter(x => macros.local_variables_from_2_to_Infinity.includes(x)))
 
 function traverseRules(rules) {
   if (!rules) return

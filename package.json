@@ -7,7 +7,7 @@
     "url": "https://github.com/Shigma/vscode-wl.git"
   },
   "description": "Wolfram Language support for Visual Studio Code.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "engines": {
     "vscode": "^1.29.0"
   },
@@ -50,7 +50,10 @@
       {
         "language": "wolfram",
         "scopeName": "source.wolfram",
-        "path": "./out/syntax.json"
+        "path": "./out/syntax.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.xml": "xml"
+        }
       }
     ]
   },

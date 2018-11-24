@@ -132,11 +132,14 @@ Cos[Pi]; System`Cos[Pi]
 
 (* Scoped functions *)
 
+Function[body]
+Function[arg, body]
+Function[{arg1, arg2}, body]
 Module[{ foo, bar = 1 }, foo]
 With[{ foo = bar }, foo ^ 3]
+Compile[{ foo, { bar, baz }}, body]
 
 (* Functions with functional parameters *)
 
 SortBy[list, foo]
 While[test, code]
-

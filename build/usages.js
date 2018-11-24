@@ -5,8 +5,6 @@ const fs = require('fs')
 
 const usages = {}
 
-const CODE_PREFIX = /^( *or *)?\uf7c1\uf7c9\uf7c8RowBox/
-
 const lexer = new DocumentLexer({
   main: [{
     regex: /(\w+)\[/,
@@ -81,8 +79,9 @@ function toMarkdown(node) {
 for (const name in rawUsages) {
   usages[name] = []
   rawUsages[name].split(/\n/g).forEach((line, index) => {
+    // if (index) usages[name].push({ type: 'text', content: '\n\n---' })
     while (true) {
-      const prefix = line.match(CODE_PREFIX)
+      const prefix = line.match(/^( *or *)?\uf7c1\uf7c9\uf7c8RowBox/)
       if (!prefix) break
       const code = line.match(/^.+?\uf7c0/)
       if (!code) break

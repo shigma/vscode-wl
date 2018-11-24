@@ -16,9 +16,6 @@ variables:
   encoded_character: \\[0-7]{3}|\\\.[0-9A-Fa-f]{2}|\\:[0-9A-Fa-f]{4}
   regexp_character: .|\\\\[\S]|{{escaped_character}}|{{encoded_character}}
 
-  regular_expression_functions: RegularExpression
-  string_template_functions: StringTemplate|TemplateApply
-  scoping_functions: Block|Module|With|DynamicModule
   character_class: alnum|alpha|ascii|blank|cntrl|digit|graph|lower|print|punct|space|upper|word|xdigit
   numeric_constants: Catalan|Degree|E|EulerGamma|Glaisher|GoldenAngle|GoldenRatio|I|Khinchin|MachinePrecision|Pi
 
@@ -57,6 +54,12 @@ contexts:
       end: \*\)
       name: comment.block.wolfram
       patterns: !push comment-block
+  
+  named-characters:
+    - match: \\\[({{named_characters}})\]
+      name: constant.character.built-in.wolfram
+    - match: \\\[\w+\]
+      name: invalid.character.built-in.wolfram
   
   literals:
     # numbers
@@ -108,13 +111,14 @@ contexts:
         - include: '#string-nested'
         - include: '#boxed'
 
+    # named characters
+    - include: '#named-characters'
+
     # escape characters
     - match: '{{escaped_character}}'
       name: constant.character.escape.wolfram
     - match: '{{encoded_character}}'
       name: constant.character.encoding.wolfram
-    - match: \\\[({{named_characters}})\]
-      name: constant.character.built-in.wolfram
 
     # invalid characters
     - match: |-
@@ -123,13 +127,8 @@ contexts:
         \\\.[0-9A-Fa-f]?(?=[^0-9A-Fa-f])|
         \\:[0-9A-Fa-f]{0,3}(?=[^0-9A-Fa-f])
       name: invalid.character.encoding.wolfram
-    - match: \\\[\w*\]
-      name: invalid.character.built-in.wolfram
     - match: \\[a-zA-Z\[]
       name: invalid.character.escape.wolfram
-    
-    - match: '[\s\S]'
-      name: string.quoted.wolfram
 
   string-nested:
     - begin: \\\"
@@ -151,7 +150,23 @@ contexts:
         - include: '#expressions'
     - include: '#string'
 
-  regular-expressions:
+  xml-template:
+    - match: (<wolfram:comment).*?(/>)
+      name: comment.line.xml-template.wolfram
+      captures: !raw
+        1: punctualation.definition.comment.begin.wolfram
+        2: punctualation.definition.comment.end.wolfram
+    - begin: <wolfram:comment>
+      end: </wolfram:comment>
+      beginCaptures: punctualation.definition.comment.begin.wolfram
+      endCaptures: punctualation.definition.comment.end.wolfram
+      name: comment.block.xml-template.wolfram
+    # FIXME: more wolfram XML patterns
+    # FIXME: escape behaviour
+    - include: text.xml
+    - include: '#string-template'
+
+  regular-expression:
     - match: \\\\[dDsSwW]
       name: storage.type.character.regexp.wolfram
     - match: (\[\^?\[)(:(?:{{character_class}}):)(\]\])
@@ -186,11 +201,11 @@ contexts:
       end: \)
       endCaptures: !all keyword.control.group.regexp.wolfram
       name: meta.group.regexp.wolfram
-      patterns: !push regular-expressions
+      patterns: !push regular-expression
     - match: \\\\[\S]
       name: constant.character.escape.regexp.wolfram
     - include: '#string'
-
+  
   boxed:
     - match: \\[%&+_^]
       name: keyword.operator.x-scriptBox.wolfram
@@ -219,6 +234,7 @@ contexts:
         4: string.quoted.wolfram punctuation.definition.string.begin
       end: '"'
       endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
+      contentName: string.quoted.wolfram
       patterns: !push string-template
     - match: (::)\s*({{alnum}}+)
       captures: !raw
@@ -272,12 +288,11 @@ contexts:
       name: keyword.operator.span.wolfram
     - match: ;
       name: keyword.operator.compound.wolfram
-    - match: \\\[({{named_characters}})\]
-      name: keyword.operator.word.wolfram
     - match: '&'
       name: keyword.operator.function entity.name.function.wolfram
     - match: \?\??
       name: keyword.operator.definition.wolfram
+    - include: '#named-characters'
 
   patterns:
     - begin: ({{identifier}})\s*(:(?=[^:>=]))
@@ -301,63 +316,103 @@ contexts:
     - match: !builtin built_in_functions
       name: support.function.wolfram
 
-  functions:
-    - !function
-      type: string-template
-      target: string_template_functions
-      context:
-        - begin: '"'
-          beginCaptures: !all punctuation.definition.string.begin.wolfram
-          end: '"'
-          endCaptures: !all punctuation.definition.string.end.wolfram
-          name: string.quoted.wolfram
-          patterns: !push string-template
-        - include: '#expressions'
+  scoped-parameters:
+    - begin: (?=[^}])
+      end: (?=})|,
+      endCaptures: !all punctuation.separator.sequence.wolfram
+      contentName: meta.scoped-variable.wolfram
+      patterns: !match-first
+        - escapes: \},
+        - begin: \s*({{identifier}})
+          beginCaptures: !raw
+            1: variable.parameter.wolfram
 
-    - !function
+  functions:
+    - !string-function
+      type: string-template
+      target: StringTemplate|TemplateApply
+      context: !push string-template
+    - !string-function
+      type: xml-template
+      target: XMLTemplate
+      context: !push xml-template
+    - !string-function
       type: regular-expression
-      target: regular_expression_functions
-      context:
-        - begin: '"'
-          beginCaptures: !all punctuation.definition.string.begin.wolfram
-          end: '"'
-          endCaptures: !all punctuation.definition.string.end.wolfram
-          name: string.quoted.wolfram
-          patterns: !push regular-expressions
-        - include: '#expressions'
+      target: RegularExpression
+      context: !push regular-expression
     
     - !function
       type: scoping
-      target: scoping_functions
+      target: Block|Module|With|DynamicModule
       context: !match-first
-        begin: \s*({)
-        beginCaptures: !raw
-          1: punctuation.section.braces.begin.wolfram
-        end: (?=\])|}
-        endCaptures: !all punctuation.section.braces.end.wolfram
-        name: meta.braces.wolfram
-        patterns:
-          - begin: (?=[^\]}])
-            end: (?=[\]}])|,
-            endCaptures: !all punctuation.separator.sequence.wolfram
-            contentName: meta.scoped-variable.wolfram
-            patterns: !match-first
-              escapes: \]},
-              begin: \s*({{identifier}})
-              beginCaptures: !raw
-                1: variable.parameter.wolfram
+        - begin: \s*({)
+          beginCaptures: !raw
+            1: punctuation.section.braces.begin.wolfram
+          end: (?=\])|}
+          endCaptures: !all punctuation.section.braces.end.wolfram
+          name: meta.braces.wolfram
+          patterns: !push scoped-parameters
+    - !function
+      type: pure
+      target: Function
+      context: !match-first
+        - begin: \s*({{identifier}})(?=\s*,)
+          beginCaptures: !raw
+            1: variable.parameter.wolfram
+        - begin: |-
+            (?x)
+            \s*(\{)
+            (?=
+              (
+                [^{}]+|
+                \{(?>\g<-1>)*\}
+              )*
+              \}\s*,
+            )
+          beginCaptures: !raw
+            1: punctuation.section.braces.begin.wolfram
+          end: (?=\])|}
+          endCaptures: !all punctuation.section.braces.end.wolfram
+          name: meta.braces.wolfram
+          patterns: !push scoped-parameters
+    - !function
+      type: complilation
+      target: Compile
+      context: !match-first
+        - begin: \s*({)
+          beginCaptures: !raw
+            1: punctuation.section.braces.begin.wolfram
+          end: \}
+          endCaptures: !all punctuation.section.braces.end.wolfram
+          name: meta.braces.wolfram
+          patterns:
+            - begin: (?=[^}])
+              end: (?=})|,
+              endCaptures: !all punctuation.separator.sequence.wolfram
+              contentName: meta.scoped-variable.wolfram
+              patterns: !match-first
+                - escapes: \]},
+                - begin: \s*({{identifier}})
+                  beginCaptures: !raw
+                    1: variable.parameter.wolfram
+                - begin: \s*({)\s*({{identifier}})(?=\s*[,}])
+                  beginCaptures: !raw
+                    1: punctuation.section.braces.begin.wolfram
+                    2: variable.parameter.wolfram
+                  end: \}
+                  endCaptures: !all punctuation.section.braces.end.wolfram
+                  name: meta.braces.wolfram
     
     - !function
       type: functional-first-param
-      target: functional_first_param
+      target: '{{functional_first_param}}'
       context: !match-first
-        begin: \s*({{identifier}})(?=\s*[,\]])
-        beginCaptures:
-          1: !function-identifier
-    
+        - begin: \s*({{identifier}})(?=\s*[,\]])
+          beginCaptures:
+            1: !function-identifier
     - !function
       type: functional-last-param
-      target: functional_last_param
+      target: '{{functional_last_param}}'
       context:
         - match: '{{identifier}}(?=\s*\])'
           captures:
@@ -372,7 +427,7 @@ contexts:
             - include: '#expressions'
 
     - !function
-      target: identifier
+      target: '{{identifier}}'
       identifier: !function-identifier
 
     - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
