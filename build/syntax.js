@@ -71,6 +71,32 @@ const makeFunction = ({ target, context, type, identifier }) => ({
   patterns: context || [{ include: '#expressions' }],
 })
 
+const makeNextParam = (patterns) => [{
+  begin: ',',
+  end: '(?=[,\]])',
+  captures: { 0: { name: 'punctuation.separator.sequence.wolfram' } },
+  patterns,
+}, {
+  include: '#expressions'
+}]
+
+function* flat(array) {
+  for (let item of array) {
+    if (Array.isArray(item)) {
+      yield* flat(item)
+    } else {
+      yield item
+    }
+  }
+}
+
+function flatten(array) {
+  return Array.from(flat(array)).map(rule => {
+    if (rule.patterns) rule.patterns = flatten(rule.patterns)
+    return rule
+  })
+}
+
 const tagSchema = (type, kind, construct) => new yaml.Type(type, { kind, construct })
 
 const schema = yaml.Schema.create([
@@ -78,6 +104,8 @@ const schema = yaml.Schema.create([
     return `(?<![0-9a-zA-Z$\`])(?:System\`)?({{${source}}})(?![0-9a-zA-Z$\`])`
   }),
   tagSchema('!function', 'mapping', makeFunction),
+  tagSchema('!flatten', 'sequence', flatten),
+  tagSchema('!next-param', 'sequence', makeNextParam),
   tagSchema('!match-first', 'sequence', makeMatchFirst),
   tagSchema('!string-function', 'mapping', ({ target, type, context }) => makeFunction({
     target,

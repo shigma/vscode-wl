@@ -46,10 +46,10 @@ contexts:
       name: constant.character.escape.wolfram
 
   comments: !clone
-    - include: '#comment-basic'
+    - include: '#comment-static'
     - include: '#comment-block'
 
-  comment-basic:
+  comment-static:
     - match: (\(\*\s*)(::(?:{{alnum}}+::)+)(\s*\*\))
       name: comment.line.cell.wolfram
       captures: !raw
@@ -73,7 +73,7 @@ contexts:
       name: invalid.character.built-in.wolfram
 
   literals: !clone
-    - include: '#literal-basic'
+    - include: '#literal-static'
     - begin: '"'
       end: '"'
       beginCaptures: !all punctuation.definition.string.begin.wolfram
@@ -81,7 +81,7 @@ contexts:
       name: string.quoted.wolfram
       patterns: !push string
   
-  literal-basic:
+  literal-static:
     # numbers
     - match: !no-whitespace |-
         (?:
@@ -210,10 +210,10 @@ contexts:
     - include: '#string-basic'
 
   boxed: !clone
-    - include: '#boxed-basic'
+    - include: '#boxed-static'
     - include: '#expressions'
   
-  boxed-basic:
+  boxed-static:
     - match: \\[%&+_^]
       name: keyword.operator.x-scriptBox.wolfram
     - match: \\/
@@ -236,10 +236,10 @@ contexts:
       endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
       contentName: string.quoted.wolfram
       patterns: !push string-template
-    - include: '#shorthand-basic'
+    - include: '#shorthand-static'
   
   # See: tutorial/OperatorInputForms
-  shorthand-basic:
+  shorthand-static:
     # Out
     - match: '%(\d*|%*)'
       name: storage.type.Out.wolfram
@@ -386,10 +386,10 @@ contexts:
       patterns: !push post-pattern
   
   post-pattern: !clone
-    - include: '#post-pattern-basic'
+    - include: '#post-pattern-static'
     - include: '#no-pattern'
 
-  post-pattern-basic:
+  post-pattern-static:
     - match: (\?)\s*({{identifier}}(?=\s*(:|{{pattern_ending}})))?
       captures: !raw
         1: keyword.operator.PatternTest.wolfram
@@ -402,15 +402,36 @@ contexts:
       name: support.function.wolfram
 
   scoped-parameters:
-    - begin: (?=[^}])
+    - begin: (?=[^},])
       end: (?=})|,
       endCaptures: !all punctuation.separator.sequence.wolfram
       contentName: meta.scoped-variable.wolfram
       patterns: !match-first
         - escapes: \},
-        - begin: \s*({{identifier}})
+        - begin: \s*({{identifier}})(?=\s*[,}])
           beginCaptures: !raw
             1: variable.parameter.wolfram
+
+  limited-parameters: !match-first
+    - begin: \s*({{identifier}})(?=\s*->)
+      beginCaptures: !raw
+        1: variable.parameter.wolfram
+    - begin: \s*(\{)(?={{balanced_braces}}\}\s*(->|[,\]]))
+      beginCaptures: !raw
+        1: punctuation.section.braces.begin.wolfram
+      end: (?=\])|}
+      endCaptures: !all punctuation.section.braces.end.wolfram
+      name: meta.braces.wolfram
+      patterns:
+        - begin: (?=[^,}])
+          end: (?=})|,
+          endCaptures: !all punctuation.separator.sequence.wolfram
+          contentName: meta.limited-variable.wolfram
+          patterns: !match-first
+            - escapes: \},
+            - begin: \s*({{identifier}})(?=\s*(->|[,}]))
+              beginCaptures: !raw
+                1: variable.parameter.wolfram
 
   functions: !clone
     - !string-function
@@ -480,6 +501,19 @@ contexts:
                   name: meta.braces.wolfram
     
     - !function
+      type: limit
+      target: '{{limit_functions}}'
+      context: !next-param
+        - include: '#limited-parameters'
+    - !function
+      type: asymptotic
+      target: '{{asymptotic_functions}}'
+      context: !flatten
+        - !next-param
+          - !next-param
+            - include: '#limited-parameters'
+    
+    - !function
       type: functional-first-param
       target: '{{functional_first_param}}'
       context: !match-first
@@ -532,9 +566,9 @@ contexts:
       end: (?={{pattern_ending}})
       contentName: meta.pattern.wolfram
       patterns: !push post-pattern
-    - include: '#variables-basic'
+    - include: '#variables-static'
 
-  variables-basic:
+  variables-static:
     # variables
     - include: '#function-identifier'
     - match: '{{identifier}}'
