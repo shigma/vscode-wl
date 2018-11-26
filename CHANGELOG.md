@@ -3,6 +3,7 @@
 ## v1.1
 
 - **Feature:** Document display on hover and on completion.
+- **config:** Set default config `wordWrap` and `wordSeparators`.
 - **Syntax:** Initial support for XML templates.
 - **Syntax:** Support for function `Function` and `Compile`.
 - **Syntax:** Support coloring for `\` before newlines.

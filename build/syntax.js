@@ -78,7 +78,7 @@ const makeFunction = ({ target, context, type, identifier }) => ({
 const schema = yaml.Schema.create([
   new yaml.Type('!builtin', {
     kind: 'scalar',
-    construct: source => `(?<!{{word_character}})(?:System\`)?({{${source}}})(?!{{word_character}})`
+    construct: source => `(?<![0-9a-zA-Z$\`])(?:System\`)?({{${source}}})(?![0-9a-zA-Z$\`])`
   }),
   new yaml.Type('!function', {
     kind: 'mapping',

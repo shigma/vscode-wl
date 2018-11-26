@@ -2,7 +2,7 @@ name: Wolfram Language
 
 scopeName: source.wolfram
 
-firstLineMatch: ^#!.*\b(math|wolfram).*$
+firstLineMatch: ^#!/usr/bin/env wolframscript *$
 
 variables:
   alnum: '[0-9a-zA-Z]'
@@ -11,7 +11,6 @@ variables:
   identifier: (?:{{symbol}}`)*{{symbol}}
   pattern_ending: '[:-]>|:?=|\/[;.\/]|[\]\)\},;&]|>>|<<|[\n\r]'
 
-  word_character: '[0-9a-zA-Z$`]'
   escaped_character: \\[ !"%&()*+/@\\^_`bfnrt<>]
   encoded_character: \\[0-7]{3}|\\\.[0-9A-Fa-f]{2}|\\:[0-9A-Fa-f]{4}
   regexp_character: .|\\\\[\S]|{{escaped_character}}|{{encoded_character}}
@@ -113,8 +112,8 @@ contexts:
   string:
     # box representation
     - begin: \\!\\\(
-      end: \\\)
-      name: meta.embedded.string-box.wolfram
+      end: \\\)|(?=")
+      name: meta.string-box.wolfram
       captures: !all keyword.operator.string-box.wolfram
       patterns:
         - include: '#string-nested'
@@ -153,7 +152,7 @@ contexts:
       name: variable.parameter.wolfram
     - begin: <\*
       end: \*>|(?=")
-      name: meta.embedded.template-expression.wolfram
+      name: meta.template-expression.wolfram
       captures: !all keyword.operator.template-expression.wolfram
       patterns:
         - include: '#string-nested'
@@ -490,7 +489,7 @@ contexts:
       context:
         - match: \s*({{identifier}})(?=\s*\])
           captures:
-            0: !function-identifier
+            1: !function-identifier
         - begin: (?=[^\]])
           end: (?=\])
           patterns:
