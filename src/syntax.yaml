@@ -26,12 +26,12 @@ patterns:
   - include: '#expressions'
 
 contexts:
-  expressions:
+  expressions: !clone
     - include: '#declarations'
     - include: '#patterns'
     - include: '#no-pattern'
   
-  no-pattern:
+  no-pattern: !clone
     - include: '#newline-escape'
     - include: '#comments'
     - include: '#literals'
@@ -45,7 +45,11 @@ contexts:
     - match: \\\r?\n
       name: constant.character.escape.wolfram
 
-  comments:
+  comments: !clone
+    - include: '#comment-basic'
+    - include: '#comment-block'
+
+  comment-basic:
     - match: (\(\*\s*)(::(?:{{alnum}}+::)+)(\s*\*\))
       name: comment.line.cell.wolfram
       captures: !raw
@@ -55,9 +59,8 @@ contexts:
             - match: '{{alnum}}+'
               name: constant.language.style.wolfram
         3: punctualation.definition.comment.end.wolfram
-    - include: '#comment-block'
 
-  comment-block:
+  comment-block: !clone
     - begin: \(\*
       end: \*\)
       name: comment.block.wolfram
@@ -68,8 +71,17 @@ contexts:
       name: constant.character.built-in.wolfram
     - match: \\\[\w+\]
       name: invalid.character.built-in.wolfram
+
+  literals: !clone
+    - include: '#literal-basic'
+    - begin: '"'
+      end: '"'
+      beginCaptures: !all punctuation.definition.string.begin.wolfram
+      endCaptures: !all punctuation.definition.string.end.wolfram
+      name: string.quoted.wolfram
+      patterns: !push string
   
-  literals:
+  literal-basic:
     # numbers
     - match: !no-whitespace |-
         (?:
@@ -101,24 +113,16 @@ contexts:
     - match: !builtin built_in_options
       name: variable.parameter.wolfram
 
-    # strings
-    - begin: \"
-      end: \"
-      beginCaptures: !all punctuation.definition.string.begin.wolfram
-      endCaptures: !all punctuation.definition.string.end.wolfram
-      name: string.quoted.wolfram
-      patterns: !push string
-
   string:
     # box representation
     - begin: \\!\\\(
       end: \\\)|(?=")
-      name: meta.string-box.wolfram
+      name: meta.embedded.string-box.wolfram
       captures: !all keyword.operator.string-box.wolfram
-      patterns:
-        - include: '#string-nested'
-        - include: '#boxed'
+      patterns: !push boxed-in-string
+    - include: '#string-basic'
 
+  string-basic:
     # named characters
     - include: '#named-characters'
 
@@ -139,24 +143,14 @@ contexts:
     - match: \\[a-zA-Z\[]
       name: invalid.character.escape.wolfram
 
-  string-nested:
-    - begin: \\\"
-      end: \\\"
-      beginCaptures: !all punctuation.definition.string.begin.wolfram
-      endCaptures: !all punctuation.definition.string.end.wolfram
-      name: string.quoted.wolfram
-      patterns: !push string
-
   string-template:
     - match: \`\w*\`
       name: variable.parameter.wolfram
     - begin: <\*
       end: \*>|(?=")
-      name: meta.template-expression.wolfram
+      name: meta.embedded.template-expression.wolfram
       captures: !all keyword.operator.template-expression.wolfram
-      patterns:
-        - include: '#string-nested'
-        - include: '#expressions'
+      patterns: !push expressions-in-string
     - include: '#string'
 
   xml-template:
@@ -202,7 +196,7 @@ contexts:
       patterns:
         - match: ({{regexp_character}})-({{regexp_character}})
           name: constant.other.range.regexp.wolfram
-        - include: '#string'
+        - include: '#string-basic'
     - begin: (\()(\?([:=!]|<[=!]))?
       beginCaptures: !raw
         1: keyword.control.group.regexp.wolfram
@@ -213,9 +207,13 @@ contexts:
       patterns: !push regular-expression
     - match: \\\\[\S]
       name: constant.character.escape.regexp.wolfram
-    - include: '#string'
+    - include: '#string-basic'
+
+  boxed: !clone
+    - include: '#boxed-basic'
+    - include: '#expressions'
   
-  boxed:
+  boxed-basic:
     - match: \\[%&+_^]
       name: keyword.operator.x-scriptBox.wolfram
     - match: \\/
@@ -226,15 +224,8 @@ contexts:
       name: keyword.operator.FormBox.wolfram
     - match: \\\*
       name: keyword.operator.box-constructor.wolfram
-    - include: '#expressions'
-  
-  # See: tutorial/OperatorInputForms
-  shorthand:
-    # Out
-    - match: '%(\d*|%*)'
-      name: storage.type.Out.wolfram
 
-    # MessageName
+  shorthand: !clone
     - begin: (::)\s*({{alnum}}+)\s*(:?=)\s*(")
       beginCaptures: !raw
         1: keyword.operator.MessageName.wolfram
@@ -245,6 +236,15 @@ contexts:
       endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
       contentName: string.quoted.wolfram
       patterns: !push string-template
+    - include: '#shorthand-basic'
+  
+  # See: tutorial/OperatorInputForms
+  shorthand-basic:
+    # Out
+    - match: '%(\d*|%*)'
+      name: storage.type.Out.wolfram
+
+    # MessageName
     - match: (::)\s*({{alnum}}+)
       captures: !raw
         1: keyword.operator.MessageName.wolfram
@@ -376,7 +376,7 @@ contexts:
     
     - include: '#named-characters'
 
-  patterns:
+  patterns: !clone
     - begin: ({{identifier}})\s*(:(?=[^:>=]))
       beginCaptures: !raw
         1: variable.parameter.wolfram
@@ -384,15 +384,18 @@ contexts:
       end: (?={{pattern_ending}})
       name: meta.pattern.wolfram
       patterns: !push post-pattern
+  
+  post-pattern: !clone
+    - include: '#post-pattern-basic'
+    - include: '#no-pattern'
 
-  post-pattern:
+  post-pattern-basic:
     - match: (\?)\s*({{identifier}}(?=\s*(:|{{pattern_ending}})))?
       captures: !raw
         1: keyword.operator.PatternTest.wolfram
         2: !function-identifier
     - match: :(?=[^:>=])
       name: keyword.operator.Optional.wolfram
-    - include: '#no-pattern'
 
   function-identifier:
     - match: !builtin built_in_functions
@@ -409,7 +412,7 @@ contexts:
           beginCaptures: !raw
             1: variable.parameter.wolfram
 
-  functions:
+  functions: !clone
     - !string-function
       type: string-template
       target: StringTemplate|TemplateApply
@@ -512,8 +515,7 @@ contexts:
       captures:
         0: !function-identifier
 
-  variables:
-    # parameters
+  variables: !clone
     - begin: !no-whitespace |-
         ({{identifier}})?
         (?:
@@ -530,7 +532,9 @@ contexts:
       end: (?={{pattern_ending}})
       contentName: meta.pattern.wolfram
       patterns: !push post-pattern
+    - include: '#variables-basic'
 
+  variables-basic:
     # variables
     - include: '#function-identifier'
     - match: '{{identifier}}'
@@ -540,7 +544,7 @@ contexts:
     - match: (#[a-zA-Z]{{alnum}}*|#\d*)
       name: variable.parameter.wolfram
   
-  nested:
+  nested: !clone
     - match: ','
       name: punctuation.separator.sequence.wolfram
     - !nested parens

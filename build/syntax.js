@@ -2,10 +2,6 @@ const yaml = require('js-yaml')
 const util = require('./util')
 const fs = require('fs')
 
-function randomID(length = 6) {
-  return Math.floor(Math.random() * 36 ** length).toString(36).padStart(length, '0')
-}
-
 function transfer(...args) {
   args = args.map(arg => typeof arg === 'string'
     ? data => ({ [arg]: data })
@@ -75,63 +71,38 @@ const makeFunction = ({ target, context, type, identifier }) => ({
   patterns: context || [{ include: '#expressions' }],
 })
 
+const tagSchema = (type, kind, construct) => new yaml.Type(type, { kind, construct })
+
 const schema = yaml.Schema.create([
-  new yaml.Type('!builtin', {
-    kind: 'scalar',
-    construct: source => `(?<![0-9a-zA-Z$\`])(?:System\`)?({{${source}}})(?![0-9a-zA-Z$\`])`
+  tagSchema('!builtin', 'scalar', source => {
+    return `(?<![0-9a-zA-Z$\`])(?:System\`)?({{${source}}})(?![0-9a-zA-Z$\`])`
   }),
-  new yaml.Type('!function', {
-    kind: 'mapping',
-    construct: makeFunction
+  tagSchema('!function', 'mapping', makeFunction),
+  tagSchema('!match-first', 'sequence', makeMatchFirst),
+  tagSchema('!string-function', 'mapping', ({ target, type, context }) => makeFunction({
+    target,
+    type,
+    context: makeMatchFirst([{
+      begin: '"',
+      beginCaptures: { 0: { name: 'punctuation.definition.string.begin.wolfram' } },
+      end: '"',
+      endCaptures: { 0: { name: 'punctuation.definition.string.end.wolfram' } },
+      name: `string.quoted.${type}.wolfram`,
+      patterns: context,
+    }])
+  })),
+  tagSchema('!function-identifier', 'scalar', () => ({
+    name: 'entity.name.function.wolfram',
+    patterns: [{ include: '#function-identifier' }],
+  })),
+  tagSchema('!no-whitespace', 'scalar', str => {
+    return str.split(/\r?\n/g).map(str => str.replace(/(#.*)?$/, '').trim()).join('')
   }),
-  new yaml.Type('!match-first', {
-    kind: 'sequence',
-    construct: makeMatchFirst
-  }),
-  new yaml.Type('!string-function', {
-    kind: 'mapping',
-    construct({ target, type, context }) {
-      return makeFunction({
-        target,
-        type,
-        context: makeMatchFirst([{
-          begin: '"',
-          beginCaptures: { 0: { name: 'punctuation.definition.string.begin.wolfram' } },
-          end: '"',
-          endCaptures: { 0: { name: 'punctuation.definition.string.end.wolfram' } },
-          name: `string.quoted.${type}.wolfram`,
-          patterns: context,
-        }])
-      })
-    }
-  }),
-  new yaml.Type('!function-identifier', {
-    kind: 'scalar',
-    construct: () => ({
-      name: 'entity.name.function.wolfram',
-      patterns: [{ include: '#function-identifier' }],
-    })
-  }),
-  new yaml.Type('!no-whitespace', {
-    kind: 'scalar',
-    construct: str => str.split(/\r?\n/g).map(str => str.replace(/(#.*)?$/, '').trim()).join('')
-  }),
-  new yaml.Type('!push', {
-    kind: 'scalar',
-    construct: source => [{ include: '#' + source }]
-  }),
-  new yaml.Type('!raw', {
-    kind: 'mapping',
-    construct: transfer(data => typeof data === 'string' ? { name: data } : data)
-  }),
-  new yaml.Type('!all', {
-    kind: 'scalar',
-    construct: name => ({ 0: { name } })
-  }),
-  new yaml.Type('!nested', {
-    kind: 'scalar',
-    construct: source => makeNested(...source.split(' '))
-  }),
+  tagSchema('!push', 'scalar', source => [{ include: '#' + source }]),
+  tagSchema('!raw', 'mapping', transfer(data => typeof data === 'string' ? { name: data } : data)),
+  tagSchema('!all', 'scalar', name => ({ 0: { name } })),
+  tagSchema('!nested', 'scalar', source => makeNested(...source.split(' '))),
+  tagSchema('!clone', 'sequence', rules => (rules._clone = true, rules))
 ])
 
 const syntax = yaml.safeLoad(
@@ -148,37 +119,76 @@ function resolve(variables, regex) {
   return output
 }
 
-const macros = require('../dist/macros')
-
 const variables = Object.assign(
-  transfer(list => list.join('|').replace(/\$/g, '\\$'))(macros),
+  transfer(list => list.join('|').replace(/\$/g, '\\$'))(require('../dist/macros')),
   transfer((item, _, variables) => resolve(variables, item))(syntax.variables)
 )
 
-// console.log(macros.functional_first_param.filter(x => macros.local_variables_from_2_to_Infinity.includes(x)))
-
-function traverseRules(rules) {
-  if (!rules) return
-  rules.forEach(rule => {
-    rule.match = resolve(variables, rule.match)
-    rule.begin = resolve(variables, rule.begin)
-    rule.end = resolve(variables, rule.end)
-    traverseRules(rule.patterns)
-    traverseCaptures(rule.captures)
-    traverseCaptures(rule.endCaptures)
-    traverseCaptures(rule.beginCaptures)
-  })
-  return rules
-}
-
-function traverseCaptures(captures) {
-  if (!captures) return
-  for (const index in captures) {
-    traverseRules(captures[index].patterns)
+const traverse = (() => {
+  function traverseCaptures(captures) {
+    if (!captures) return
+    const result = {}
+    for (const index in captures) {
+      result[index] = Object.assign({}, captures[index])
+      result[index].patterns = traverseRules(captures[index].patterns)
+    }
+    return result
   }
-}
+  
+  function traverseRules(rules) {
+    if (!rules) return
+    return rules.map(rule => {
+      rule = Object.assign({}, rule)
+      if (rule.match) rule.match = rule.match.replace(/"/g, '\\"')
+      if (rule.begin) rule.begin = rule.begin.replace(/"/g, '\\"')
+      if (rule.end) rule.end = rule.end.replace(/"/g, '\\"') + '|(?=")'
+      rule.patterns = traverseRules(rule.patterns)
+      rule.captures = traverseCaptures(rule.captures)
+      rule.endCaptures = traverseCaptures(rule.endCaptures)
+      rule.beginCaptures = traverseCaptures(rule.beginCaptures)
+      if (rule.include && (
+        syntax.contexts[rule.include.slice(1) + '-in-string'] ||
+        (syntax.contexts[rule.include.slice(1)] || {})._clone)) {
+          rule.include += '-in-string'
+      }
+      return rule
+    })
+  }
 
-syntax.repository = transfer('patterns', traverseRules)(syntax.contexts)
+  return traverseRules
+})()
+
+Object.keys(syntax.contexts)
+  .forEach(key => {
+    const context = syntax.contexts[key]
+    if (!context._clone) return
+    syntax.contexts[key + '-in-string'] = traverse(context)
+  })
+
+syntax.repository = transfer('patterns', ((resolve) => {
+  function traverseCaptures(captures) {
+    if (!captures) return
+    for (const index in captures) {
+      traverseRules(captures[index].patterns)
+    }
+  }
+  
+  function traverseRules(rules) {
+    if (!rules) return
+    rules.forEach(rule => {
+      rule.match = resolve(rule.match, 'match')
+      rule.begin = resolve(rule.begin, 'begin')
+      rule.end = resolve(rule.end, 'end')
+      traverseRules(rule.patterns)
+      traverseCaptures(rule.captures)
+      traverseCaptures(rule.endCaptures)
+      traverseCaptures(rule.beginCaptures)
+    })
+    return rules
+  }
+
+  return traverseRules
+})(regex => resolve(variables, regex)))(syntax.contexts)
 
 delete syntax.variables
 delete syntax.contexts
