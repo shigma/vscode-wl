@@ -1,5 +1,6 @@
 const yaml = require('js-yaml')
 const util = require('./util')
+const path = require('path')
 const fs = require('fs')
 
 function transfer(...args) {
@@ -15,123 +16,13 @@ function transfer(...args) {
   }
 }
 
-const bracketMap = {
-  parens: ['\\(', '\\)'],
-  parts: ['\\[\\s*\\[', '\\]\\s*\\]'],
-  brackets: ['\\[', '\\]'],
-  braces: ['{', '}'],
-  association: ['<\\|', '\\|>'],
-}
+const typesDir = util.fullPath('build/types')
 
-const makeNested = (type, scope = type) => ({
-  begin: bracketMap[type][0],
-  beginCaptures: {
-    0: { name: `punctuation.section.${type}.begin.wolfram` }
-  },
-  end: bracketMap[type][1],
-  endCaptures: {
-    0: { name: `punctuation.section.${type}.end.wolfram` }
-  },
-  name: `meta.${scope}.wolfram`,
-  patterns: [{
-    include: '#expressions'
-  }]
-})
-
-function makeMatchFirst(rules) {
-  let escapes = '\\]'
-  const index = rules.findIndex(rule => rule.escapes)
-  if (index >= 0) escapes = rules[index].escapes
-  return [
-    ...rules.filter(rule => !rule.escapes).map(rule => {
-      rule.end = rule.end || `(?=[${escapes}])`
-      rule.patterns = rule.patterns || [{ include: '#expressions' }]
-      return rule
-    }),
-    {
-      begin: `(?=[^${escapes}])`,
-      end: `(?=[${escapes}])`,
-      patterns: [{ include: '#expressions' }],
-    }
-  ]
-}
-
-const makeFunction = ({ target, context, type, identifier }) => ({
-  begin: `(${target})\\s*(\\[(?!\\[))`,
-  beginCaptures: {
-    1: identifier ||
-      { name: `${ type ? 'support.function.' + type : 'entity.name.function' }.wolfram` },
-    2: { name: 'punctuation.section.brackets.begin.wolfram' },
-  },
-  end: '\\]',
-  endCaptures: {
-    0: { name: 'punctuation.section.brackets.end.wolfram' },
-  },
-  contentName: 'meta.block.wolfram',
-  patterns: context || [{ include: '#expressions' }],
-})
-
-const makeNextParam = (patterns) => [{
-  begin: ',',
-  end: '(?=[,\]])',
-  captures: { 0: { name: 'punctuation.separator.sequence.wolfram' } },
-  patterns,
-}, {
-  include: '#expressions'
-}]
-
-function* flat(array) {
-  for (let item of array) {
-    if (Array.isArray(item)) {
-      yield* flat(item)
-    } else {
-      yield item
-    }
-  }
-}
-
-function flatten(array) {
-  return Array.from(flat(array)).map(rule => {
-    if (rule.patterns) rule.patterns = flatten(rule.patterns)
-    return rule
+const schema = yaml.Schema.create(
+  fs.readdirSync(typesDir).map(name => {
+    return new yaml.Type('!' + name.slice(0, -3), require(path.resolve(typesDir, name)))
   })
-}
-
-const tagSchema = (type, kind, construct) => new yaml.Type(type, { kind, construct })
-
-const schema = yaml.Schema.create([
-  tagSchema('!builtin', 'scalar', source => {
-    return `(?<![0-9a-zA-Z$\`])(?:System\`)?({{${source}}})(?![0-9a-zA-Z$\`])`
-  }),
-  tagSchema('!function', 'mapping', makeFunction),
-  tagSchema('!flatten', 'sequence', flatten),
-  tagSchema('!next-param', 'sequence', makeNextParam),
-  tagSchema('!match-first', 'sequence', makeMatchFirst),
-  tagSchema('!string-function', 'mapping', ({ target, type, context }) => makeFunction({
-    target,
-    type,
-    context: makeMatchFirst([{
-      begin: '"',
-      beginCaptures: { 0: { name: 'punctuation.definition.string.begin.wolfram' } },
-      end: '"',
-      endCaptures: { 0: { name: 'punctuation.definition.string.end.wolfram' } },
-      name: `string.quoted.${type}.wolfram`,
-      patterns: context,
-    }])
-  })),
-  tagSchema('!function-identifier', 'scalar', () => ({
-    name: 'entity.name.function.wolfram',
-    patterns: [{ include: '#function-identifier' }],
-  })),
-  tagSchema('!no-whitespace', 'scalar', str => {
-    return str.split(/\r?\n/g).map(str => str.replace(/(#.*)?$/, '').trim()).join('')
-  }),
-  tagSchema('!push', 'scalar', source => [{ include: '#' + source }]),
-  tagSchema('!raw', 'mapping', transfer(data => typeof data === 'string' ? { name: data } : data)),
-  tagSchema('!all', 'scalar', name => ({ 0: { name } })),
-  tagSchema('!nested', 'scalar', source => makeNested(...source.split(' '))),
-  tagSchema('!clone', 'sequence', rules => (rules._clone = true, rules))
-])
+)
 
 const syntax = yaml.safeLoad(
   fs.readFileSync(util.fullPath('src/syntax.yaml')),
@@ -177,7 +68,7 @@ const traverse = (() => {
       if (rule.include && (
         syntax.contexts[rule.include.slice(1) + '-in-string'] ||
         (syntax.contexts[rule.include.slice(1)] || {})._clone)) {
-          rule.include += '-in-string'
+        rule.include += '-in-string'
       }
       return rule
     })
