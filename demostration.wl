@@ -76,8 +76,6 @@ Image[Red, Interleaving -> True]
 
 (* Declaration for functions *)
 
-identity = # &;
-foo = Function[];
 f[x_ ? TrueQ, y_ /; Negative[y], z, OptionsPattern[]] := 2x /; y > 0;
 
 (* Rules *)

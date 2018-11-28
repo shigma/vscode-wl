@@ -27,7 +27,6 @@ patterns:
 
 contexts:
   expressions: !clone
-    - include: '#declarations'
     - include: '#patterns'
     - include: '#no-pattern'
   
@@ -404,7 +403,7 @@ contexts:
   # var -> val
   # { var -> val }
   # { var } -> { val }
-  limit-param: !flatten
+  limit-param: !clone
     - !next
       - !first
         - !parameter (?=\s*->)
@@ -416,7 +415,7 @@ contexts:
               - !parameter (?=\s*(->|[,}]))
 
   # var1, var2, ...
-  scoped-param:
+  scoped-param: !clone
     - !foreach
       - !first
         - \},
@@ -424,22 +423,23 @@ contexts:
 
   # var
   # { var1, var2, ... }
-  solve-param: !first
-    - \],
-    - !parameter
-    - !list
-      - include: '#scoped-param'
+  solve-param: !clone
+    - !first
+      - \],
+      - !parameter
+      - !list
+        - include: '#scoped-param'
 
-  grad-param: !flatten
+  grad-param: !clone
     - !next
       - !first
         - include: '#solve-param'
 
   # { var, val1, val2, ... }, { var2, val1, val2, ... }
-  plot-param: !next
-    - !foreach
-      - \]
-      - !flatten
+  plot-param: !clone
+    - !next
+      - !foreach
+        - \]
         - !first
           - \],
           - !list
@@ -482,21 +482,6 @@ contexts:
     - !function
       type: compilation
       target: Compile
-          name: meta.braces.wolfram
-          patterns:
-            - begin: (?=[^}])
-              end: (?=})|,
-              endCaptures: !all punctuation.separator.sequence.wolfram
-              contentName: meta.scoped-variable.wolfram
-              patterns: !match-first
-                - escapes: \]},
-                - begin: \s*({{identifier}})
-                  beginCaptures: !raw
-                    1: variable.parameter.wolfram
-                - begin: \s*({)\s*({{identifier}})(?=\s*[,}])
-                  beginCaptures: !raw
-                    1: punctuation.section.braces.begin.wolfram
-                    2: variable.parameter.wolfram
       context: !first
         - !list
           - '[\],]'
@@ -613,11 +598,6 @@ contexts:
     - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
       captures:
         1: !function-identifier
-
-  declarations:
-    - match: ({{identifier}})(?=\s*:?=\s*Function\s*\[(?!\s*\[))
-      captures:
-        0: !function-identifier
 
   variables: !clone
     - begin: !no-whitespace |-

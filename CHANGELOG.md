@@ -12,4 +12,6 @@
 
 ## v1.2
 
+- **Revert:** Remove declaration syntax.
 - **Syntax:** Support nested expressions in strings.
+- **Syntax:** Advanced coloring in different types of functions.
