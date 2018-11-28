@@ -1,11 +1,11 @@
 module.exports = {
   kind: 'sequence',
   construct(rules) {
-    let escapes = '\\]'
-    const index = rules.findIndex(rule => rule.escapes)
-    if (index >= 0) escapes = rules[index].escapes
+    const index = rules.findIndex(rule => typeof rule === 'string')
+    const escapes = index >= 0 ? rules[index] : '\\]'
     return [
-      ...rules.filter(rule => !rule.escapes).map(rule => {
+      ...rules.filter(rule => typeof rule !== 'string').map(rule => {
+        if (rule.include) return rule
         rule.end = rule.end || `(?=[${escapes}])`
         rule.patterns = rule.patterns || [{ include: '#expressions' }]
         return rule

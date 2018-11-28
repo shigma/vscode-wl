@@ -3,7 +3,7 @@ module.exports = {
   construct(patterns) {
     return [{
       begin: ',',
-      end: '(?=[,\\]])',
+      end: '(?=[}\\]])',
       captures: { 0: { name: 'punctuation.separator.sequence.wolfram' } },
       patterns,
     }, {

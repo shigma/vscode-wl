@@ -1,10 +1,4 @@
-const bracketMap = {
-  parens: ['\\(', '\\)'],
-  parts: ['\\[\\[', '\\]\\]'],
-  brackets: ['\\[', '\\]'],
-  braces: ['{', '}'],
-  association: ['<\\|', '\\|>'],
-}
+const { bracketMap } = require('../util')
 
 const makeNested = (type, scope = type) => ({
   begin: bracketMap[type][0],

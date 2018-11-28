@@ -1,5 +1,5 @@
 const makeFunction = require('./function').construct
-const makeMatchFirst = require('./match-first').construct
+const makeFirst = require('./first').construct
 
 module.exports = {
   kind: 'mapping',
@@ -7,7 +7,7 @@ module.exports = {
     return makeFunction({
       target,
       type,
-      context: makeMatchFirst([{
+      context: makeFirst([{
         begin: '"',
         beginCaptures: { 0: { name: 'punctuation.definition.string.begin.wolfram' } },
         end: '"',
