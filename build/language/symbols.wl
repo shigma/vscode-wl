@@ -6,6 +6,9 @@
 Begin["wl`"];
 
 
+usageDictionary = Import[FileNameJoin[{$InstallationDirectory,"SystemFiles/Kernel/TextResources/English/usage.m"}], "Text"]
+
+
 namespace = Select[Names["System`*"], PrintableASCIIQ];
 
 Function[usages,

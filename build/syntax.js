@@ -1,33 +1,17 @@
 const yaml = require('js-yaml')
 const util = require('./util')
-const path = require('path')
 const fs = require('fs')
 
-function transfer(...args) {
-  args = args.map(arg => typeof arg === 'string'
-    ? data => ({ [arg]: data })
-    : arg)
-  return source => {
-    const output = {}
-    for (const key in source) {
-      output[key] = args.reduceRight((prev, curr) => curr(prev, key, output), source[key])
-    }
-    return output
-  }
-}
-
-const typesDir = util.fullPath('build/types')
-
 const schema = yaml.Schema.create(
-  fs.readdirSync(typesDir).map(name => {
-    return new yaml.Type('!' + name.slice(0, -3), require(path.resolve(typesDir, name)))
+  fs.readdirSync(util.fullPath('build/types')).map(name => {
+    return new yaml.Type(
+      '!' + name.slice(0, -3),
+      require(util.fullPath('build/types', name))
+    )
   })
 )
 
-const syntax = yaml.safeLoad(
-  fs.readFileSync(util.fullPath('src/syntax.yaml')),
-  { schema },
-)
+const syntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntax.yaml')), { schema })
 
 function resolve(variables, regex) {
   if (!regex) return
@@ -39,83 +23,108 @@ function resolve(variables, regex) {
 }
 
 const variables = Object.assign(
-  transfer(list => list.join('|').replace(/\$/g, '\\$'))(require('../dist/macros')),
-  transfer((item, _, variables) => resolve(variables, item))(syntax.variables)
+  util.transfer(list => list.join('|').replace(/\$/g, '\\$'))(require('../dist/macros')),
+  util.transfer((item, _, variables) => resolve(variables, item))(syntax.variables),
 )
 
-const traverse = (() => {
-  function traverseCaptures(captures) {
+class Traverser {
+  constructor({ parseName, parseRegex, parseInclude } = {}) {
+    this.parseName = parseName
+    this.parseRegex = parseRegex
+    this.parseInclude = parseInclude
+  }
+
+  getCaptures(captures) {
     if (!captures) return
     const result = {}
     for (const index in captures) {
-      result[index] = Object.assign({}, captures[index])
-      result[index].name = traverseName(result[index].name)
-      result[index].patterns = traverseRules(captures[index].patterns)
+      const capture = result[index] = Object.assign({}, captures[index])
+      capture.name = this.getName(capture.name)
+      capture.patterns = this.getRules(capture.patterns)
     }
     return result
   }
 
-  function traverseName(name) {
+  getName(name) {
     if (!name) return
-    return name.replace(/(meta\.[\w.]+\.)(wolfram)/g, (_, $1, $2) => $1 + 'in-string.' + $2)
+    if (!this.parseName) return name
+    return this.parseName(name)
   }
-  
-  function traverseRules(rules) {
+
+  getRegex(rule, key) {
+    if (rule[key]) rule[key] = this.parseRegex(rule[key], key)
+  }
+
+  getInclude(name) {
+    if (!name) return
+    if (!this.parseInclude) return name
+    return this.parseInclude(name)
+  }
+
+  getRules(rules) {
     if (!rules) return
     return rules.map(rule => {
       rule = Object.assign({}, rule)
-      if (rule.match) rule.match = rule.match.replace(/"/g, '\\\\"')
-      if (rule.begin) rule.begin = rule.begin.replace(/"/g, '\\\\"')
-      if (rule.end) rule.end = rule.end.replace(/"/g, '\\\\"') + '|(?=")'
-      rule.name = traverseName(rule.name)
-      rule.contentName = traverseName(rule.contentName)
-      rule.patterns = traverseRules(rule.patterns)
-      rule.captures = traverseCaptures(rule.captures)
-      rule.endCaptures = traverseCaptures(rule.endCaptures)
-      rule.beginCaptures = traverseCaptures(rule.beginCaptures)
-      if (rule.include && (
-        syntax.contexts[rule.include.slice(1) + '-in-string'] ||
-        (syntax.contexts[rule.include.slice(1)] || {})._clone)) {
-        rule.include += '-in-string'
+      if (this.parseRegex) {
+        this.getRegex(rule, 'match')
+        this.getRegex(rule, 'begin')
+        this.getRegex(rule, 'end')
       }
+      rule.name = this.getName(rule.name)
+      rule.contentName = this.getName(rule.contentName)
+      rule.include = this.getInclude(rule.include)
+      rule.patterns = this.getRules(rule.patterns)
+      rule.captures = this.getCaptures(rule.captures)
+      rule.endCaptures = this.getCaptures(rule.endCaptures)
+      rule.beginCaptures = this.getCaptures(rule.beginCaptures)
       return rule
     })
   }
 
-  return traverseRules
-})()
+  traverse(rules) {
+    return this.getRules(rules)
+  }
+}
 
-Object.keys(syntax.contexts)
-  .forEach(key => {
-    const context = syntax.contexts[key]
-    if (!context._clone) return
-    syntax.contexts[key + '-in-string'] = traverse(context)
-  })
-
-syntax.repository = transfer('patterns', ((resolve) => {
-  function traverseCaptures(captures) {
-    if (!captures) return
-    for (const index in captures) {
-      traverseRules(captures[index].patterns)
+const cloneTraverser = new Traverser({
+  parseName(name) {
+    return name.replace(
+      /(meta\.[\w.]+\.)(wolfram)/g,
+      (_, $1, $2) => $1 + 'in-string.' + $2
+    )
+  },
+  parseRegex(source, key) {
+    let result = source.replace(/"/g, '\\\\"')
+    if (key === 'end') result += '|(?=")'
+    return result
+  },
+  parseInclude(name) {
+    if (name.endsWith('-in-string')) return name
+    const origin = name.slice(1)
+    if (syntax.contexts[origin + '-in-string'] || (syntax.contexts[origin] || {})._clone) {
+      return name + '-in-string'
+    } else {
+      return name
     }
   }
-  
-  function traverseRules(rules) {
-    if (!rules) return
-    rules.forEach(rule => {
-      rule.match = resolve(rule.match, 'match')
-      rule.begin = resolve(rule.begin, 'begin')
-      rule.end = resolve(rule.end, 'end')
-      traverseRules(rule.patterns)
-      traverseCaptures(rule.captures)
-      traverseCaptures(rule.endCaptures)
-      traverseCaptures(rule.beginCaptures)
-    })
-    return rules
-  }
+})
 
-  return traverseRules
-})(regex => resolve(variables, regex)))(syntax.contexts)
+Object.keys(syntax.contexts).forEach(key => {
+  const context = syntax.contexts[key]
+  if (!context._clone) return
+  syntax.contexts[key + '-in-string'] = cloneTraverser.traverse(context)
+})
+
+const macroTraverser = new Traverser({
+  parseRegex(source) {
+    return resolve(variables, source)
+  }
+})
+
+syntax.repository = util.transfer(
+  'patterns',
+  macroTraverser.traverse.bind(macroTraverser)
+)(syntax.contexts)
 
 delete syntax.variables
 delete syntax.contexts

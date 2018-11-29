@@ -1,7 +1,8 @@
 {
   "files.exclude": {
     "package-lock.json": true,
-    "node_modules": true
+    "node_modules": true,
+    "**/*.js.map": true,
   },
   "[markdown]": {
     "editor.wordWrap": "off"
