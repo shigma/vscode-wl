@@ -107,8 +107,6 @@ contexts:
       name: constant.numeric.wolfram
     - match: !builtin built_in_constants
       name: constant.language.wolfram
-    - match: !builtin built_in_undocumented_symbols
-      name: support.undocumented-symbol.wolfram
     - match: !builtin built_in_options
       name: variable.parameter.wolfram
 
@@ -399,6 +397,8 @@ contexts:
   function-identifier:
     - match: !builtin built_in_functions
       name: support.function.wolfram
+    - match: !builtin built_in_undocumented_symbols
+      name: support.undocumented-symbol.wolfram
 
   # var -> val
   # { var -> val }
@@ -508,10 +508,8 @@ contexts:
     - !function
       type: solve-like
       target: '{{local_solve_var_at_2}}'
-      context: !flatten
-        - !next
-          - !first
-            - include: '#solve-param'
+      context: !next
+        - include: '#solve-param'
     - !function
       type: transform
       target: '{{local_solve_var_from_2}}'

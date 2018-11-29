@@ -49,18 +49,26 @@ const traverse = (() => {
     const result = {}
     for (const index in captures) {
       result[index] = Object.assign({}, captures[index])
+      result[index].name = traverseName(result[index].name)
       result[index].patterns = traverseRules(captures[index].patterns)
     }
     return result
+  }
+
+  function traverseName(name) {
+    if (!name) return
+    return name.replace(/(meta\.[\w.]+\.)(wolfram)/g, (_, $1, $2) => $1 + 'in-string.' + $2)
   }
   
   function traverseRules(rules) {
     if (!rules) return
     return rules.map(rule => {
       rule = Object.assign({}, rule)
-      if (rule.match) rule.match = rule.match.replace(/"/g, '\\"')
-      if (rule.begin) rule.begin = rule.begin.replace(/"/g, '\\"')
-      if (rule.end) rule.end = rule.end.replace(/"/g, '\\"') + '|(?=")'
+      if (rule.match) rule.match = rule.match.replace(/"/g, '\\\\"')
+      if (rule.begin) rule.begin = rule.begin.replace(/"/g, '\\\\"')
+      if (rule.end) rule.end = rule.end.replace(/"/g, '\\\\"') + '|(?=")'
+      rule.name = traverseName(rule.name)
+      rule.contentName = traverseName(rule.contentName)
       rule.patterns = traverseRules(rule.patterns)
       rule.captures = traverseCaptures(rule.captures)
       rule.endCaptures = traverseCaptures(rule.endCaptures)
