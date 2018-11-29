@@ -4,6 +4,7 @@
 
 - **Revert:** Remove declaration syntax.
 - **Language:** Add supported extension `nbp`.
+- **Syntax:** Embedded xml language support in `XMLTemplate`.
 - **Syntax:** Fix coloring for some undocumented symbols.
 - **Syntax:** Support nested expressions in strings.
 - **Syntax:** Advanced coloring in different types of functions.

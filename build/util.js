@@ -17,6 +17,12 @@ function transfer(...args) {
   }
 }
 
+function vscPath(...filenames) {
+  const match = process.env.PATH.match(/(;|^)[^;]+Microsoft VS Code\\bin(;|$)/g)
+  if (!match) return
+  return path.resolve(match[0].replace(/;/g, ''), '..', ...filenames)
+}
+
 const bracketMap = {
   parens: ['\\(', '\\)'],
   parts: ['\\[\\[', '\\]\\]'],
@@ -29,4 +35,5 @@ module.exports = {
   transfer,
   fullPath,
   bracketMap,
+  vscPath,
 }

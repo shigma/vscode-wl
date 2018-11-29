@@ -158,12 +158,10 @@ contexts:
         2: punctualation.definition.comment.end.wolfram
     - begin: <wolfram:comment>
       end: </wolfram:comment>
-      beginCaptures: punctualation.definition.comment.begin.wolfram
-      endCaptures: punctualation.definition.comment.end.wolfram
+      beginCaptures: !all punctualation.definition.comment.begin.wolfram
+      endCaptures: !all punctualation.definition.comment.end.wolfram
       name: comment.block.xml-template.wolfram
-    # FIXME: more wolfram XML patterns
-    # FIXME: escape behaviour
-    - include: text.xml
+    - include: text.xml.in-string
     - include: '#string-template'
 
   regular-expression:
