@@ -50,7 +50,22 @@
           ".wls",
           ".nbp"
         ],
-        "configuration": "./language.json"
+        "configuration": "./wolfram-language.json",
+        "firstLine": "^#!/usr/bin/env wolframscript *$",
+        "mimetypes": [
+          "application/vnd.wolfram.mathematica"
+        ]
+      },
+      {
+        "id": "wstp-template",
+        "aliases": [
+          "WSTP Template",
+          "WSTP"
+        ],
+        "extensions": [
+          ".tm"
+        ],
+        "configuration": "./wstp-template.json"
       }
     ],
     "grammars": [
@@ -58,6 +73,14 @@
         "language": "wolfram",
         "scopeName": "source.wolfram",
         "path": "./out/syntax.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.xml": "xml"
+        }
+      },
+      {
+        "language": "wstp-template",
+        "scopeName": "source.wstp",
+        "path": "./out/wstp.json",
         "embeddedLanguages": {
           "meta.embedded.block.xml": "xml"
         }
