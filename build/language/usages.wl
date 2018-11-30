@@ -58,4 +58,12 @@ UsageParser[sym_String] := Block[
 
 End[];
 
+(* TODO: 找到并测试所有合法的函数名
+
+symbolNames=Select[Names["System`*"],PrintableASCIIQ];
+(*AssociationMap[UsageParser,symbolNames]*)
+Association[ParallelMap[#->UsageParser[#]&,symbolNames]//ProgressReport];
+Export["test.json",%,"RawJSON",CharacterEncoding->"Unicode"]
+*)
+
 EndPackage[]
