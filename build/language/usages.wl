@@ -37,23 +37,24 @@ $MDRule = {
 	FractionBox[a_, b_] :> {"(", a, ")/(", b, ")"},
 	OverscriptBox[a_, b_] :> {a}
 };
-BoxParser[str_String] := StringRiffle[Flatten@ReleaseHold[MakeExpression[str, StandardForm] //. $MDRule], ""]
-BoxParser[sym_MessageName] := ToString@First[sym] <> " is a build-in function but no description";
+BoxParser[str_String] := StringRiffle[Flatten@ReleaseHold[MakeExpression[str, StandardForm] //. $MDRule], ""];
 getUsage[expr_] := StringDrop[expr /. Hold :> BoxParser, 1];(*Drop first space*)
-
-
-
-
-splitUsage[sym_Symbol] := Echo@StringSplit[StringReplace[MessageName[sym, "usage"], "\n\!" -> "\r\!"], "\r"];
+nonFunctionCase[usage_MessageName] := "**" <> ToString@First[usage] <> "** is a build-in symbol but not be documented.";
+nonFunctionCase[usage_] := Block[
+	{plain = FE`makePlainText@usage},
+	StringReplace[getFunction@plain, "\r\n" -> ""]
+];
+splitUsage[sym_Symbol] := StringSplit[StringReplace[MessageName[sym, "usage"], "\n\!" -> "\r\!"], "\r"];
 UsageParser[sym_String] := Block[
 	{spited},
 	If[
-		SyntaxInformation[sym] === {},
-		Return[<|"type" -> "text", "content" -> BoxParser@ToExpression[sym <> "::usage"]|>]
+		SyntaxInformation[ToExpression@sym] === {},
+		Return[<|"type" -> "text", "content" -> nonFunctionCase@ToExpression[sym <> "::usage"]|>]
 	];
 	spited = splitUsage[ToExpression@sym];
 	Flatten[format@*getBox /@ spited]
 ];
+
 
 End[];
 
