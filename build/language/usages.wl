@@ -34,7 +34,8 @@ BoxParser[str_String] := StringRiffle[Flatten@ReleaseHold[MakeExpression[str, St
 getUsage[expr_] := StringDrop[expr /. Hold :> BoxParser, 1];(*Drop first space*)
 
 
-UsageParser[expr_Symbol] := Flatten[format@*getBox /@ StringSplit[MessageName[expr, "usage"], "\n"]];
+splitUsage[expr_] := StringSplit[StringReplace[MessageName[expr, "usage"], "\n\!" -> "\r\!"], "\r"];
+UsageParser[expr_Symbol] := Flatten[format@*getBox /@ splitUsage[expr]];
 
 End[];
 
