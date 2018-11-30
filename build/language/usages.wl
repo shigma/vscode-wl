@@ -4,7 +4,9 @@ UsageParser::usage = "UsageParser[symbol] ";
 
 Begin["`Private`"];
 
-$here = ParentDirectory[$InputFileName /. "" -> NotebookFileName[]];
+(*FrontEnd function is used and cannot be entered in command line*)
+(*$here = ParentDirectory[$InputFileName /. "" -> NotebookFileName[]];*)
+$here = NotebookDirectory[];
 
 getBox[str_String] := StringReplace[str, Shortest["\!\(\*" ~~ expr__ ~~ "\)"] :> Hold[expr]]
 format = {
@@ -30,17 +32,28 @@ $MDRule = {
 	StyleBox[f_, "TI"] :> {"*", f, "*"},
 	StyleBox[f_, ___] :> {f},
 	RowBox[l_] :> {l},
-	SubscriptBox[a_, b_] :> {a, "_", b},
-	SuperscriptBox[a_, b_] :> {a, "^", b},
+	SubscriptBox[a_, b_] :> {a, b},
+	SuperscriptBox[a_, b_] :> {a, b},
 	FractionBox[a_, b_] :> {"(", a, ")/(", b, ")"},
 	OverscriptBox[a_, b_] :> {a}
 };
-BoxParser[str_String] := StringRiffle[Flatten@ReleaseHold[MakeExpression[str, StandardForm] //. $MDRule], ""];
+BoxParser[str_String] := StringRiffle[Flatten@ReleaseHold[MakeExpression[str, StandardForm] //. $MDRule], ""]
+BoxParser[sym_MessageName] := ToString@First[sym] <> " is a build-in function but no description";
 getUsage[expr_] := StringDrop[expr /. Hold :> BoxParser, 1];(*Drop first space*)
 
 
-splitUsage[sym_] := StringSplit[StringReplace[MessageName[sym, "usage"], "\n\!" -> "\r\!"], "\r"];
-UsageParser[sym_Symbol] := Flatten[format@*getBox /@ splitUsage[sym]];
+
+
+splitUsage[sym_Symbol] := Echo@StringSplit[StringReplace[MessageName[sym, "usage"], "\n\!" -> "\r\!"], "\r"];
+UsageParser[sym_String] := Block[
+	{spited},
+	If[
+		SyntaxInformation[sym] === {},
+		Return[<|"type" -> "text", "content" -> BoxParser@ToExpression[sym <> "::usage"]|>]
+	];
+	spited = splitUsage[ToExpression@sym];
+	Flatten[format@*getBox /@ spited]
+];
 
 End[];
 
