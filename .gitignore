@@ -5,3 +5,7 @@ test.*
 /dist
 /out
 vsc-extension-quickstart.md
+
+# IDE
+*.idea
+*.iml
