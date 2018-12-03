@@ -56,7 +56,7 @@ contexts:
         2: 
           patterns:
             - match: '{{alnum}}+'
-              name: constant.language.style.wolfram
+              name: entity.name.section.wolfram
         3: punctualation.definition.comment.end.wolfram
 
   comment-block: !clone
@@ -269,6 +269,11 @@ contexts:
   
   # See: tutorial/Operators
   operators:
+    # /.    Replace
+    # //.   ReplaceAll
+    - match: \/\/?\.
+      name: keyword.operator.replace.wolfram
+
     # @     Prefix
     # @@    Apply
     # @@@   Apply
@@ -280,11 +285,6 @@ contexts:
     # /*    RightComposition
     - match: /[/@]|[/@]\*|@{1,3}|~
       name: keyword.operator.call.wolfram
-
-    # /.    Replace
-    # //.   ReplaceAll
-    - match: \/\/?\.
-      name: keyword.operator.replace.wolfram
 
     # >     Greater
     # <     Less
@@ -395,8 +395,12 @@ contexts:
   function-identifier:
     - match: !builtin built_in_functions
       name: support.function.wolfram
+      captures: !raw
+        1: support.function.context.wolfram
     - match: !builtin built_in_undocumented_symbols
       name: support.undocumented-symbol.wolfram
+      captures: !raw
+        1: support.context.wolfram
 
   # var -> val
   # { var -> val }
@@ -617,12 +621,14 @@ contexts:
   variables-static:
     # variables
     - include: '#function-identifier'
-    - match: '{{identifier}}'
+    - match: ((?:{{symbol}}`)*){{symbol}}
       name: variable.other.wolfram
+      captures: !raw
+        1: variable.other.context.wolfram
 
     # slots
     - match: (#[a-zA-Z]{{alnum}}*|#\d*)
-      name: variable.parameter.wolfram
+      name: variable.parameter.slot.wolfram
   
   nested: !clone
     - match: ','
