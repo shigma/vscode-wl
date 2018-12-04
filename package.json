@@ -7,7 +7,7 @@
     "url": "https://github.com/Shigma/vscode-wl.git"
   },
   "description": "Wolfram Language support for Visual Studio Code.",
-  "version": "1.3.0-beta.1",
+  "version": "1.3.0",
   "engines": {
     "vscode": "^1.29.0"
   },
@@ -37,10 +37,15 @@
           "default": null,
           "description": "The installation directory for Wolfram Mathematica."
         },
+        "wolfram.syntax.xmlTemplate": {
+          "type": "boolean",
+          "default": false,
+          "description": "Support XML template syntax in special functions (experimental)."
+        },
         "wolfram.syntax.typeInference": {
           "type": "boolean",
           "default": false,
-          "description": "Support type inference in special functions. \nCAUTION: It may cause regular expression deny of service, although it is not common."
+          "description": "Support type inference in special functions. It uses recursive subpattern, which may cause regular expression denial of service, although it is not common."
         }
       }
     },
@@ -54,6 +59,11 @@
       {
         "command": "wolfram.setInstallationDirectory",
         "title": "Set Installation Directory",
+        "category": "Wolfram"
+      },
+      {
+        "command": "wolfram.generateSyntaxFile",
+        "title": "Generate Syntax File",
         "category": "Wolfram"
       }
     ],

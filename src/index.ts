@@ -6,6 +6,7 @@ const dictionary = require('./usages')
 const namespace = require('./namespace')
 const commandNames = [
   'setInstallationDirectory',
+  'generateSyntaxFile',
 ]
 
 for (const name in dictionary) {

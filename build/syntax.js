@@ -95,15 +95,17 @@ function parseContexts(syntax, name) {
     repository[key] = { patterns: macroTraverser.traverse(contexts[key]) }
   }
 
+  syntax._name = name
   syntax.repository = repository
   delete syntax.contexts
 
   fs.writeFileSync(util.fullPath('out/syntaxes', name + '.json'), JSON.stringify(syntax))
+  return syntax
 }
 
 parseContexts(baseSyntax, 'base')
 
-fs.readdirSync(util.fullPath('src/syntaxes')).forEach(name => {
+fs.readdirSync(util.fullPath('src/syntaxes')).map(name => {
   if (name === 'base.yaml') return
   const syntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes', name)), { schema })
   parseContexts(syntax, name.slice(0, -5))
