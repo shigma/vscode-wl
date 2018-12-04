@@ -1,5 +1,12 @@
 # Change Log
 
+## v1.3
+
+- **Feature:** Some syntaxes are now treated as plugins.
+- **Command:** `wolfram.generateSyntaxFile`: Generate syntax file.
+- **Config:** `wolfram.syntax.xmlTemplate`: Support XML template syntax in special functions.
+- **Config:** `wolfram.syntax.typeInference`: Support type inference in special functions.
+
 ## v1.2
 
 - **Revert:** Remove declaration syntax.
