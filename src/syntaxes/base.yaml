@@ -150,7 +150,7 @@ contexts:
     - include: '#string'
 
   xml-template:
-    - !slot xml-template
+    - !slot
     - include: '#string-template'
 
   regular-expression:
@@ -405,7 +405,7 @@ contexts:
       target: RegularExpression
       context: !push regular-expression
 
-    - !slot type-inference
+    - !slot
 
     - !function
       target: '{{identifier}}'

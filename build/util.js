@@ -1,20 +1,8 @@
 const path = require('path')
+const fs = require('fs')
 
 function fullPath(...filenames) {
   return path.resolve(__dirname, '..', ...filenames)
-}
-
-function transfer(...args) {
-  args = args.map(arg => typeof arg === 'string'
-    ? data => ({ [arg]: data })
-    : arg)
-  return source => {
-    const output = {}
-    for (const key in source) {
-      output[key] = args.reduceRight((prev, curr) => curr(prev, key, output), source[key])
-    }
-    return output
-  }
 }
 
 function vscPath(...filenames) {
@@ -23,17 +11,14 @@ function vscPath(...filenames) {
   return path.resolve(match[0].replace(/;/g, ''), '..', ...filenames)
 }
 
-const bracketMap = {
-  parens: ['\\(', '\\)'],
-  parts: ['\\[\\[', '\\]\\]'],
-  brackets: ['\\[', '\\]'],
-  braces: ['{', '}'],
-  association: ['<\\|', '\\|>'],
+function mkdir(...filenames) {
+  const filepath = fullPath(...filenames)
+  if (fs.existsSync(filepath)) return
+  fs.mkdirSync(filepath) 
 }
 
 module.exports = {
-  transfer,
   fullPath,
-  bracketMap,
   vscPath,
+  mkdir,
 }

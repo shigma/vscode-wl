@@ -11,6 +11,7 @@ rules:
   indent:
     - error
     - 2
+    - switchCase: 2
   quotes:
     - warn
     - single

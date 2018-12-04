@@ -29,7 +29,7 @@ const lexer = new DocumentLexer({
     regex: /,|\s+/,
     token: null,
   }, {
-    regex: '\\_(\w+)',
+    regex: /\\_(\w+)/,
     token: ([_, text]) => text,
   }],
 })

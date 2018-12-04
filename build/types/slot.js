@@ -1,4 +1,4 @@
 module.exports = {
   kind: 'scalar',
-  construct: name => 'slot:' + name
+  construct: () => '__SLOT__'
 }

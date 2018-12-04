@@ -1,3 +1,4 @@
+const { mergeSyntax } = require('../src/utils/syntax')
 const MacroParser = require('./utils/macroParser')
 const Traverser = require('./utils/traverser')
 const wordList = require('../dist/macros')
@@ -107,3 +108,5 @@ fs.readdirSync(util.fullPath('src/syntaxes')).forEach(name => {
   const syntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes', name)), { schema })
   parseContexts(syntax, name.slice(0, -5))
 })
+
+mergeSyntax(baseSyntax)
