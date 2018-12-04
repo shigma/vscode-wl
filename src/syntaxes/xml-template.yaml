@@ -1,0 +1,13 @@
+contexts:
+  xml-template:
+    - match: (<wolfram:comment).*?(/>)
+      name: comment.line.xml-template.wolfram
+      captures: !raw
+        1: punctualation.definition.comment.begin.wolfram
+        2: punctualation.definition.comment.end.wolfram
+    - begin: <wolfram:comment>
+      end: </wolfram:comment>
+      beginCaptures: !all punctualation.definition.comment.begin.wolfram
+      endCaptures: !all punctualation.definition.comment.end.wolfram
+      name: comment.block.xml-template.wolfram
+    - include: text.xml.in-string

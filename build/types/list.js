@@ -3,7 +3,7 @@ module.exports = {
   construct(patterns) {
     const escapes = patterns.find(rule => typeof rule === 'string') || '[,\\]}]'
     return {
-      begin: `\\s*(\\{)(?={{balanced_braces}}\\}\\s*${escapes})`,
+      begin: `\\s*(\\{)(?=([^{}]+|\\{(?>\\g<-1>)*\\})*\\}\\s*${escapes})`,
       beginCaptures: { 1: { name: 'punctuation.section.braces.begin.wolfram' } },
       end: '(?=[\\]])|}',
       endCaptures: { 0: { name: 'punctuation.section.braces.end.wolfram' } },

@@ -1,0 +1,176 @@
+contexts:
+  # var -> val
+  # { var -> val }
+  # { var } -> { val }
+  limit-param: !clone
+    - !next
+      - !first
+        - !parameter (?=\s*->)
+        - !list
+          - (->|[,\]])
+          - !foreach
+            - !first
+              - \},
+              - !parameter (?=\s*(->|[,}]))
+
+  # var1, var2, ...
+  scoped-param: !clone
+    - !foreach
+      - !first
+        - \},
+        - !parameter
+
+  # var
+  # { var1, var2, ... }
+  solve-param: !clone
+    - !first
+      - \],
+      - !parameter
+      - !list
+        - include: '#scoped-param'
+
+  grad-param: !clone
+    - !next
+      - !first
+        - include: '#solve-param'
+
+  # { var, val1, val2, ... }, { var2, val1, val2, ... }
+  plot-param: !clone
+    - !next
+      - !foreach
+        - \]
+        - !first
+          - \],
+          - !list
+            - !first
+              - \}
+              - !parameter
+
+  functions:
+    - !function
+      type: scoping
+      target: Block|Module|With|DynamicModule
+      context: !first
+        - !list
+          - '[\],]'
+          - !foreach
+            - !first
+              - \},
+              - !parameter \b
+    - !function
+      type: pure
+      target: Function
+      context: !first
+        - !parameter (?=\s*,)
+        - !list
+          - ','
+          - include: '#scoped-param'
+    - !function
+      type: compilation
+      target: Compile
+      context: !first
+        - !list
+          - '[\],]'
+          - !foreach
+            - !flatten
+              - !first
+                - \]},
+                - !parameter
+                - !list
+                  - !first
+                    - \}
+                    - !parameter
+    
+    - !function
+      type: limit-like
+      target: '{{limit_functions}}'
+      context: !push limit-param
+    - !function
+      type: asymptotic-like
+      target: '{{asymptotic_functions}}'
+      context: !next
+        - include: '#limit-param'
+    
+    - !function
+      type: solve-like
+      target: '{{local_solve_var_at_2}}'
+      context: !next
+        - include: '#solve-param'
+    - !function
+      type: transform
+      target: '{{local_solve_var_from_2}}'
+      context: !next
+        - !foreach
+          - \]
+          - !push solve-param
+    - !function
+      type: grad-like
+      target: '{{local_grad_var_at_2}}'
+      context: !first
+        - begin: \s*({{identifier}})(?=\s*[,\]])
+          beginCaptures:
+            1: !function-identifier
+          patterns: !push grad-param
+        - begin: (?=[^\]])
+          patterns: !push grad-param
+    
+    - !function
+      type: plot-like
+      target: '{{local_plot_var_from_2}}'
+      context: !push plot-param
+    - !function
+      type: ndsolve-like
+      target: '{{local_plot_var_from_3}}'
+      context: !next
+        - include: '#plot-param'
+    - !function
+      type: sum-like
+      target: '{{local_sum_var_from_2}}'
+      context: !first
+        - begin: \s*({{identifier}})(?=\s*[,\]])
+          beginCaptures:
+            1: !function-identifier
+          patterns: !push plot-param
+        - begin: (?=[^\]])
+          patterns: !push plot-param
+    
+    - !function
+      type: manipulate
+      target: '{{local_manipulate_var_from_2}}'
+      context: !next
+        - !foreach
+          - \]
+          - !flatten
+            - !first
+              - \],
+              - !list
+                - !first
+                  - \}
+                  - !parameter
+                  - !list
+                    - !first
+                      - \}
+                      - !parameter
+    
+    - !function
+      type: functional-first-param
+      target: '{{functional_first_param}}'
+      context: !first
+        - begin: \s*({{identifier}})(?=\s*[,\]])
+          beginCaptures:
+            1: !function-identifier
+    - !function
+      type: functional-last-param
+      target: '{{functional_last_param}}'
+      context:
+        - match: \s*({{identifier}})(?=\s*\])
+          captures:
+            1: !function-identifier
+        - begin: (?=[^\]])
+          end: (?=\])
+          patterns:
+            - match: (,)\s*({{identifier}})(?=\s*\])
+              captures: !raw
+                1: punctuation.separator.sequence.wolfram
+                2: !function-identifier
+            - include: '#expressions'

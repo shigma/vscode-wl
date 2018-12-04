@@ -28,12 +28,35 @@
     "onLanguage:wolfram"
   ],
   "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Wolfram Language",
+      "properties": {
+        "wolfram.installationDirectory": {
+          "type": "string",
+          "default": null,
+          "description": "The installation directory for Wolfram Mathematica."
+        },
+        "wolfram.syntax.typeInference": {
+          "type": "boolean",
+          "default": false,
+          "description": "Support type inference in special functions. \nCAUTION: It may cause regular expression deny of service, although it is not common."
+        }
+      }
+    },
     "configurationDefaults": {
       "[wolfram]": {
         "editor.wordWrap": "off",
         "editor.wordSeparators": "_~!@#%^&*()-=+[{]}\\|;:'\",.<>/?"
       }
     },
+    "commands": [
+      {
+        "command": "wolfram.setInstallationDirectory",
+        "title": "Set Installation Directory",
+        "category": "Wolfram"
+      }
+    ],
     "languages": [
       {
         "id": "wolfram",

@@ -4,6 +4,9 @@ const WORD_PATTERN = /([$a-zA-Z]+[$0-9a-zA-Z]*`)*[$a-zA-Z]+[$0-9a-zA-Z]*/
 
 const dictionary = require('./usages')
 const namespace = require('./namespace')
+const commandNames = [
+  'setInstallationDirectory',
+]
 
 for (const name in dictionary) {
   const mdString = new vscode.MarkdownString()
@@ -18,6 +21,12 @@ for (const name in dictionary) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  const config = vscode.workspace.getConfiguration('wolfram')
+
+  commandNames.forEach(name => {
+    const command = require('./commands/' + name).default(config)
+    context.subscriptions.push(vscode.commands.registerCommand('wolfram.' + name, command))
+  })
 
   const builtinSymbolsProvider = vscode.languages.registerCompletionItemProvider('wolfram', {
     provideCompletionItems(document, position, token, context) {
