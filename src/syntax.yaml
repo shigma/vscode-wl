@@ -21,6 +21,7 @@ variables:
 
   character_class: alnum|alpha|ascii|blank|cntrl|digit|graph|lower|print|punct|space|upper|word|xdigit
   numeric_constants: Catalan|Degree|E|EulerGamma|Glaisher|GoldenAngle|GoldenRatio|I|Khinchin|MachinePrecision|Pi
+  attribute_names: Constant|Flat|HoldAll|HoldAllComplete|HoldFirst|HoldRest|Listable|Locked|NHoldAll|NHoldFirst|NHoldRest|NumericFunction|OneIdentity|Orderless|Protected|ReadProtected|SequenceHold|Stub|Temporary
 
 patterns:
   - include: '#expressions'
@@ -103,6 +104,8 @@ contexts:
         6: constant.numeric.exponent.wolfram
 
     # built-in symbols
+    - match: !builtin attribute_names
+      name: constant.language.attribute.wolfram
     - match: !builtin numeric_constants
       name: constant.numeric.wolfram
     - match: !builtin built_in_constants
@@ -141,7 +144,7 @@ contexts:
       name: invalid.character.escape.wolfram
 
   string-template:
-    - match: \`\w*\`
+    - match: \`{{symbol}}\`
       name: variable.parameter.wolfram
     - begin: <\*
       end: \*>|(?=")
@@ -400,7 +403,7 @@ contexts:
     - match: !builtin built_in_undocumented_symbols
       name: support.undocumented-symbol.wolfram
       captures: !raw
-        1: support.context.wolfram
+        1: support.function.context.wolfram
 
   # var -> val
   # { var -> val }

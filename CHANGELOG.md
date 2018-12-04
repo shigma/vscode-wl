@@ -8,6 +8,11 @@
 - **Syntax:** Fix coloring for some undocumented symbols.
 - **Syntax:** Support nested expressions in strings.
 - **Syntax:** Advanced coloring in different types of functions.
+- **Syntax:** Support operator `//.` (ReplaceAll).
+- **Enhance:** Add some detailed scope names including:
+  - `variable.parameter.slot.wolfram` for slot parameters.
+  - `constant.language.attribute.wolfram` for attribute names.
+  - `variable.other.context.wolfram`, `entity.name.function.context.wolfram` and `support.function.context.wolfram` for contexts.
 
 ## v1.1
 
