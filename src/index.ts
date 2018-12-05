@@ -1,11 +1,11 @@
 import * as vscode from 'vscode'
-import setInstallationDirectory from './commands/setInstallationDirectory'
-import generateSyntaxFile, { checkSyntaxFile } from './commands/generateSyntaxFile'
+import { setInstallationDirectory } from './commands/setInstallationDirectory'
+import { generateSyntaxFile, checkSyntaxFile } from './commands/generateSyntaxFile'
 
 const WORD_PATTERN = /([$a-zA-Z]+[$0-9a-zA-Z]*`)*[$a-zA-Z]+[$0-9a-zA-Z]*/
 
 const dictionary = require('./usages')
-const namespace = require('./namespace')
+const namespace = require('./resources/system')
 
 for (const name in dictionary) {
   const mdString = new vscode.MarkdownString()

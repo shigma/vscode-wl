@@ -1,6 +1,5 @@
 import * as vscode from 'vscode'
-
-const { mergeSyntax } = require('../utils/syntax')
+import { mergeSyntax } from '../utilities/syntax'
 
 function getCurrentPlugins() {
   const plugins: string[] = []
@@ -16,7 +15,7 @@ function isSyntaxUpdated(plugins: string[]) {
   return _plugins.size === plugins.length && plugins.every(name => _plugins.has(name))
 }
 
-export default function generateSyntaxFile(forced = false) {
+export function generateSyntaxFile(forced = false) {
   const plugins = getCurrentPlugins()
   if (!forced && isSyntaxUpdated(plugins)) {
     vscode.window.showInformationMessage('The syntax file is consistent with your configuration. There is no need to regenerate.')

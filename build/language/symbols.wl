@@ -3,24 +3,7 @@
 << (NotebookDirectory[] <> "utilities.wl");
 
 
-Begin["wl`"];
-
-
 usageDictionary = Import[FileNameJoin[{$InstallationDirectory,"SystemFiles/Kernel/TextResources/English/usage.m"}], "Text"]
-
-
-namespace = Select[Names["System`*"], PrintableASCIIQ];
-
-Function[usages,
-	usageDictionary = Select[usages, Head["Definition" /. Values[#]] === String &];
-	usagePresentSymbols = Keys @ usageDictionary;
-	usageAbsentSymbols = Complement[namespace, usagePresentSymbols];
-] @ util`ruleMap[Block[{symbol = Symbol[#]},
-	Join[SyntaxInformation[symbol], {
-		"Definition" -> ToExpression[# <> "::usage"],
-		"Attributes" -> Attributes[Evaluate[symbol]]
-	}]
-] &, namespace];
 
 
 documentedLists = Keys[#] -> Values[#] /@ util`getGuideText["ListingOf" <> util`toCamel[Keys[#]]] & /@ {
@@ -30,7 +13,15 @@ documentedLists = Keys[#] -> Values[#] /@ util`getGuideText["ListingOf" <> util`
 };
 
 
-DumpSave[NotebookDirectory[] <> "../dist/wldata.mx", "wl`"];
+(* ::Subsubsection:: *)
+(*Get namespace*)
 
 
-End[];
+getSymbols[context_String] := Select[Names[context <> "*"], PrintableASCIIQ];
+util`writeFile["out/resources/system.json", util`toJSON[getSymbols["System`"]]];
+util`writeFile["out/resources/addons.json", util`toJSON[
+	With[{context = # <> "`"},
+		Quiet[Needs[context]];
+		If[StringStartsQ[#, context], #, context <> #]& /@ getSymbols[context]
+	]& /@ FileBaseName /@ FileNames["*", FileNameJoin[{$InstallationDirectory, "AddOns"}], {2}] // Flatten
+]];

@@ -1,7 +1,7 @@
 import { exec } from 'child_process'
 import * as vscode from 'vscode'
 
-export default function setInstallationDirectory(global?: boolean) {
+export function setInstallationDirectory(global?: boolean) {
   const config = vscode.workspace.getConfiguration('wolfram')
   exec('wolframscript -c $InstallationDirectory', (error, stdout, stderr) => {
     if (error) throw error

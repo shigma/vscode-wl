@@ -1,7 +1,7 @@
-const fs = require('fs')
-const utils = require('.')
+import * as fs from 'fs'
+import * as utils from '.'
 
-function mergeSyntax(base, ...syntaxes) {
+export function mergeSyntax(base, ...syntaxes) {
   base._plugins = []
   syntaxes.forEach(syntax => {
     base._plugins.push(syntax._name)
@@ -24,8 +24,4 @@ function mergeSyntax(base, ...syntaxes) {
   }
 
   fs.writeFileSync(utils.fullPath('out/syntax.json'), JSON.stringify(base))
-}
-
-module.exports = {
-  mergeSyntax,
 }

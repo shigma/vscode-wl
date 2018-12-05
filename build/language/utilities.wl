@@ -14,7 +14,7 @@ ruleMap[func_, list_] := With[{size = Length @ list},
 	]
 ];
 
-resolveFileName[filename_] := FileNameJoin[{NotebookDirectory[], filename}]
+resolveFileName[filename_] := FileNameJoin[{NotebookDirectory[], "../..", filename}]
 readFile[filename_] := Import[resolveFileName[filename], "String"];
 writeFile[filename_, content_] := Export[resolveFileName[filename], content, "String"];
 replaceFile[filename_, rules_] := writeFile[filename, StringReplace[readFile[filename], rules]];
@@ -31,9 +31,6 @@ toCamel[source_] := StringReplace[source,
 	("-" | "_" | " " | StartOfString) ~~ char_ :> ToUpperCase[char]
 ];
 
-toJSON[expression_, indent_: 2] := StringReplace[
-	JSONTools`ToJSON[expression],
-	StartOfLine ~~ whitespace: " ".. :> StringTake[whitespace, StringLength @ whitespace / 4 * indent]
-];
+toJSON[expression_] := Developer`ToJSON[expression, Compact -> True];
 
 End[];
