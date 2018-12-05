@@ -14,3 +14,12 @@ $ServerPackages = Select[
 symbols = Sort@Flatten[Select[Names[# <> "`*"], PrintableASCIIQ]& /@ $CommonPackages];
 Quiet@Cases[ParallelMap[ToExpression[# <> "::usage"]&, symbols] // ProgressReport, _MessageName]
 (*About 85s, 12ms each symbol*)
+
+
+
+
+Table[Quiet[Needs[#<>"`"]&/@$DistributionPackages],{i,3}]
+Length[names=Select[Names["*`*"],PrintableASCIIQ]]
+filter=Select[names,!StringContainsQ[#,{"Dump`","Private`",RegularExpression["`[a-z]"],RegularExpression["\$[0-9]"],"$$"}]&]
+gather=GatherBy[{Context @ #,Last@StringSplit[#, "`"]}&/@filter,First];
+Export["Symbols.json",GeneralUtilities`ToAssociations@Sort[#[[1,1]]->#[[All,-1]]&/@gather],"RawJSON"]
