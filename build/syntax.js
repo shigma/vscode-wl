@@ -1,4 +1,4 @@
-const { mergeSyntax } = require('../src/utils/syntax')
+const { mergeSyntax } = require('../out/utils/syntax')
 const MacroParser = require('./utils/macroParser')
 const Traverser = require('./utils/traverser')
 const wordList = require('../dist/macros')

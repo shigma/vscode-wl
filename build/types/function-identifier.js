@@ -3,13 +3,13 @@ module.exports = {
   construct() {
     return {
       patterns: [{
-        include: '#function-identifier'
-      }, {
-        match: '((?:{{symbol}}`)*){{symbol}}',
-        name: 'entity.name.function.wolfram',
+        match: `(?<![0-9a-zA-Z$\`])(System\`)?({{built_in_undocumented_symbols}})(?![0-9a-zA-Z$\`])`,
+        name: 'support.function.undocumented.wolfram',
         captures: {
-          1: { name: 'entity.name.function.context.wolfram' }
-        },
+          1: { name: 'support.function.context.wolfram' }
+        }
+      }, {
+        include: '#variable-basic'
       }],
     }
   }

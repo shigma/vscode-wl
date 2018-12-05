@@ -46,7 +46,7 @@ contexts:
               - \}
               - !parameter
 
-  functions:
+  functions: !clone
     - !function
       type: scoping
       target: Block|Module|With|DynamicModule

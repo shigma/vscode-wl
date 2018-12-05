@@ -6,6 +6,9 @@
 - **Command:** `wolfram.generateSyntaxFile`: Generate syntax file.
 - **Config:** `wolfram.syntax.xmlTemplate`: Support XML template syntax in special functions.
 - **Config:** `wolfram.syntax.typeInference`: Support type inference in special functions.
+- **Syntax:** [#4](https://github.com/Shigma/vscode-wl/issues/4) Fix unexpected behaviour when colorizing expressions after Get/Put/PutAppend.
+- **Enhance:** Add some detailed scope names including:
+  - `.context.wolfram` suffix for `constant.language`, `constant.numeric`, `support.undocumented` and `variable.parameter.option`.
 
 ## v1.2
 
@@ -15,11 +18,11 @@
 - **Syntax:** Fix coloring for some undocumented symbols.
 - **Syntax:** Support nested expressions in strings.
 - **Syntax:** Advanced coloring in different types of functions.
-- **Syntax:** Support operator `//.` (ReplaceAll).
-- **Enhance:** Add some detailed scope names including:
+- **Syntax:** [#3](https://github.com/Shigma/vscode-wl/issues/3) Support operator `//.` (ReplaceAll).
+- **Enhance:** [#3](https://github.com/Shigma/vscode-wl/issues/3) Add some detailed scope names including:
   - `variable.parameter.slot.wolfram` for slot parameters.
   - `constant.language.attribute.wolfram` for attribute names.
-  - `variable.other.context.wolfram`, `entity.name.function.context.wolfram` and `support.function.context.wolfram` for contexts.
+  - `.context.wolfram` suffix for `variable.other`, `entity.name.function` and `support.function`.
 
 ## v1.1
 

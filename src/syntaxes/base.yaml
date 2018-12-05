@@ -100,14 +100,10 @@ contexts:
         6: constant.numeric.exponent.wolfram
 
     # built-in symbols
-    - match: !builtin attribute_names
-      name: constant.language.attribute.wolfram
-    - match: !builtin numeric_constants
-      name: constant.numeric.wolfram
-    - match: !builtin built_in_constants
-      name: constant.language.wolfram
-    - match: !builtin built_in_options
-      name: variable.parameter.wolfram
+    - !builtin attribute_names constant.language.attribute
+    - !builtin numeric_constants constant.numeric
+    - !builtin built_in_constants constant.language
+    - !builtin built_in_options variable.parameter.option
 
   string:
     # box representation
@@ -235,7 +231,7 @@ contexts:
         2: string.unquoted.wolfram
     
     # Get & Put & PutAppend
-    - match: (<<|>>>?) *([a-zA-Z0-9`/.!-_:$*~?\\]+)(?=[\s\)\]\},;])
+    - match: (<<|>>>?) *([a-zA-Z0-9`/.!_:$*~?\\-]+) *(?=[\)\]\},;]|$)
       captures: !raw
         1: keyword.operator.flow.wolfram
         2: string.unquoted.filename.wolfram
@@ -381,16 +377,6 @@ contexts:
     - match: :(?=[^:>=])
       name: keyword.operator.Optional.wolfram
 
-  function-identifier:
-    - match: !builtin built_in_functions
-      name: support.function.wolfram
-      captures: !raw
-        1: support.function.context.wolfram
-    - match: !builtin built_in_undocumented_symbols
-      name: support.undocumented-symbol.wolfram
-      captures: !raw
-        1: support.function.context.wolfram
-
   functions: !clone
     - !string-function
       type: string-template
@@ -434,13 +420,17 @@ contexts:
       patterns: !push post-pattern
     - include: '#variables-static'
 
-  variables-static:
-    # variables
-    - include: '#function-identifier'
+  variable-basic: 
+    - !builtin built_in_functions support.function
     - match: ((?:{{symbol}}`)*){{symbol}}
       name: variable.other.wolfram
       captures: !raw
         1: variable.other.context.wolfram
+
+  variables-static:
+    # variables
+    - !builtin built_in_undocumented_symbols support.undocumented
+    - include: '#variable-basic'
 
     # slots
     - match: (#[a-zA-Z]{{alnum}}*|#\d*)
