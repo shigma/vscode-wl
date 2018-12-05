@@ -1,5 +1,9 @@
 # Change Log
 
+## v1.4
+
+- **Feature:** Support coloring for symbols from official addons.
+
 ## v1.3
 
 - **Feature:** Some syntaxes are now treated as plugins.

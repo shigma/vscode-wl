@@ -167,7 +167,7 @@ contexts:
       name: keyword.control.anchors.regexp.wolfram
     - match: \|
       name: keyword.operator.alternation.regexp.wolfram
-    - match: ([?+*]|{[0-9]*,[0-9]+}|{[0-9]+,[0-9]*})
+    - match: ([?+*]|{\d*,\d+}|{\d+,\d*})
       name: keyword.other.qualifier.regexp.wolfram
     - begin: \[\^?
       end: \]
@@ -429,12 +429,15 @@ contexts:
 
   variables-static:
     # variables
-    - !builtin built_in_undocumented_symbols support.undocumented
+    - !builtin undocumented_symbols support.undocumented
     - include: '#variable-basic'
 
     # slots
     - match: (#[a-zA-Z]{{alnum}}*|#\d*)
       name: variable.parameter.slot.wolfram
+
+  undocumented-function:
+    - !builtin undocumented_symbols support.function.undocumented support.function.context
   
   nested: !clone
     - match: ','
