@@ -102,6 +102,6 @@ for (const name in rawUsages) {
 }
 
 fs.writeFileSync(
-  util.fullPath('out/usages.json'),
+  util.fullPath('out/resources/usages.json'),
   JSON.stringify(usages),
 )

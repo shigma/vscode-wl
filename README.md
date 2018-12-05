@@ -1,25 +1,27 @@
 # Wolfram Language
 
-Wolfram Language support for Visual Studio Code.
+[Wolfram Language](https://reference.wolfram.com/language) support for [Visual Studio Code](https://code.visualstudio.com/).
 
-## Basic Features
+## Features
 
 - All syntaxes from Wolfram Language.
 - Updated documentations and completions.
 
 Demostration files can be seen under the *demo* folder.
 
-## Supported Symbols
+### Supported Symbols
+
+This extension uses specified crawler to get symbols and their usage from [Mathematica](http://www.wolfram.com/mathematica).
 
 | Category | System Symbols | AddOns Symbols |
 |:--------:|:--------------:|:--------------:|
-| Function | 4169 | 948 |
-| Constant | 443 | 733 |
-| Option | 970 | 196 |
-| Undocumented | 604 | 575 |
-| Total | 6186 | 2452 |
+| Function | 4169 | 953 |
+| Constant | 437 | 1030 |
+| Option | 973 | 260 |
+| Undocumented | 611 | 408 |
+| Total | 6190 | 2651 |
 
-### Syntax Plugins 
+### Syntax Plugins
 
 (*Invented in v1.3*) This extension also provided some syntax plugins which will enrich the coloring behaviour. These plugins can be found in settings:
 

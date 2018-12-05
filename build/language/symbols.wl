@@ -14,16 +14,37 @@ documentedLists = Keys[#] -> Values[#] /@ util`getGuideText["ListingOf" <> util`
 (*Namespace*)
 
 
-getSymbols[context_String] := Select[Names[context <> "*"], PrintableASCIIQ];
+getSymbolList::usage = "getSymbolList[context] returns all the symbols which belong to the context.";
+getSymbolList[context_String] := Select[Names[context <> "*"], PrintableASCIIQ];
+
+getContextSymbolList::usage = "getContextSymbolList[context] returns all the symbols which belong to the context with the context name.";
+getContextSymbolList[context_String] := If[StringStartsQ[#, context], #, context <> #]& /@ getSymbolList[context];
+
+SetAttributes[{getSymbolList, getContextSymbolList}, Listable];
+
+getDotMFileNames[directory_] := FileBaseName /@ FileNames["*.m", directory];
 
 
-util`writeFile["out/resources/system.json", util`toJSON[systemSymbolList = getSymbols["System`"]]];
-util`writeFile["out/resources/addons.json", util`toJSON[
-	addonsSymbolList = With[{context = # <> "`"},
-		Quiet[Needs[context]];
-		If[StringStartsQ[#, context], #, context <> #]& /@ getSymbols[context]
-	]& /@ FileBaseName /@ FileNames["*", FileNameJoin[{$InstallationDirectory, "AddOns"}], {2}] // Flatten
-]];
+addonsSymbolList = Block[{pacletinfo, extensions, context = FileBaseName[#] <> "`"},
+	pacletinfo = Quiet @ Import[# <> "/PacletInfo.m"];
+	If[FileNameTake[#, {-2}] === "ExtraPackages",
+		(* Extra packages cannot be directly needed *)
+		(Needs[#]; getContextSymbolList[#])&[context <> # <> "`"]& /@ getDotMFileNames[#],
+		Needs[context];
+		If[pacletinfo === $Failed,
+			(* No pacletinfo file was found *)
+			If[# <> "`" === context, Unevaluated[Nothing], context <> # <> "`"]& /@ getDotMFileNames[#] // Append[context],
+			extensions = Cases[Extensions /. Level[pacletinfo, 1], {"Kernel", rules___} :> {rules}] // Flatten;
+			If[Length[extensions] === 0, {context}, Context /. extensions]
+		] // getContextSymbolList
+	]
+]& /@ FileNames["*/*", FileNameJoin[{$InstallationDirectory, "AddOns"}]] // Quiet // Flatten;
+
+systemSymbolList = If[StringStartsQ[#, "System`"], StringDrop[#, 7], #]& /@ getSymbolList["System`"];
+
+
+util`writeFile["out/resources/system.json", util`toJSON[systemSymbolList]];
+util`writeFile["out/resources/addons.json", util`toJSON[addonsSymbolList]];
 
 
 systemSymbolList = Import[util`resolveFileName["out/resources/system.json"]];
