@@ -1,3 +1,5 @@
+(* ::Package:: *)
+
 BeginPackage["util`"];
 
 UsageParser::usage = "UsageParser[symbol] ";
@@ -58,12 +60,10 @@ UsageParser[sym_String] := Block[
 
 End[];
 
-(* TODO: 找到并测试所有合法的函数名
-
-symbolNames=Select[Names["System`*"],PrintableASCIIQ];
-(*AssociationMap[UsageParser,symbolNames]*)
-Association[ParallelMap[#->UsageParser[#]&,symbolNames]//ProgressReport];
-Export["test.json",%,"RawJSON",CharacterEncoding->"Unicode"]
-*)
-
 EndPackage[]
+
+
+Developer`WriteExpressionJSONString[StringSplit[usageDictionary["Import"],"\!\(\*"~~content: Except["\)"]...~~"\)":>ToExpression[content]],Compact->True]
+
+
+RowBox[{"Import","[",StyleBox["\"\!\(\*StyleBox[\"file\",\"TI\"]\)\"",ShowStringCharacters->True],"]"}]//Developer`WriteExpressionJSONString

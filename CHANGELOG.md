@@ -2,7 +2,7 @@
 
 ## v1.4
 
-- **Feature:** Support coloring for symbols from official addons.
+- **Feature:** Support coloring and documentation for symbols from official addons.
 
 ## v1.3
 

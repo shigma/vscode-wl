@@ -14,11 +14,15 @@ const namespace: string[] = [
 
 for (const name in dictionary) {
   const mdString = new vscode.MarkdownString()
-  dictionary[name].forEach(({ type, content }) => {
-    if (type === 'text') {
-      mdString.appendMarkdown(content)
+  const context = name.match(/[\w`]+`/)
+  if (context) {
+    mdString.appendMarkdown('From package: **' + context[0] + '**\n\n')
+  }
+  dictionary[name].forEach(block => {
+    if (block.slice(0, 4) === 'text') {
+      mdString.appendMarkdown(block.slice(6))
     } else {
-      mdString.appendCodeblock(content, 'wolfram')
+      mdString.appendCodeblock(block.slice(6), 'wolfram')
     }
   })
   dictionary[name] = mdString

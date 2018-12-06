@@ -422,15 +422,15 @@ contexts:
 
   variable-basic: 
     - !builtin built_in_functions support.function
-    - match: ((?:{{symbol}}`)*){{symbol}}
-      name: variable.other.wolfram
-      captures: !raw
-        1: variable.other.context.wolfram
 
   variables-static:
     # variables
     - !builtin undocumented_symbols support.undocumented
     - include: '#variable-basic'
+    - match: ((?:{{symbol}}`)*){{symbol}}
+      name: variable.other.wolfram
+      captures: !raw
+        1: variable.other.context.wolfram
 
     # slots
     - match: (#[a-zA-Z]{{alnum}}*|#\d*)
