@@ -77,9 +77,6 @@ contexts:
       patterns: !push string
 
   string:
-    - include: '#string-basic'
-
-  string-basic:
     # named characters
     - include: '#named-characters'
 
@@ -99,60 +96,6 @@ contexts:
       name: invalid.character.encoding.wolfram
     - match: \\[a-zA-Z\[]
       name: invalid.character.escape.wolfram
-
-  string-template:
-    - match: \`{{symbol}}\`
-      name: variable.parameter.wolfram
-    - begin: <\*
-      end: \*>|(?=")
-      name: meta.embedded.template-expression.wolfram
-      captures: !all keyword.operator.template-expression.wolfram
-      patterns: !push expressions-in-string
-    - include: '#string'
-
-  xml-template:
-    - !slot
-    - include: '#string-template'
-
-  regular-expression:
-    - match: \\\\[dDsSwW]
-      name: storage.type.character.regexp.wolfram
-    - match: (\[\^?\[)(:(?:{{character_class}}):)(\]\])
-      captures: !raw
-        1: storage.class.character.regexp.wolfram
-        2: constant.other.class.regexp.wolfram
-        3: storage.class.character.regexp.wolfram
-    - match: \\\\g?[1-9]+
-      name: storage.other.reference.regexp.wolfram
-    - match: \(\?-?[ims]\)
-      name: storage.modifier.mode.regexp.wolfram
-    - match: \.
-      name: keyword.other.any.regexp.wolfram
-    - match: ([$^]|\\\\[bB])
-      name: keyword.control.anchors.regexp.wolfram
-    - match: \|
-      name: keyword.operator.alternation.regexp.wolfram
-    - match: ([?+*]|{\d*,\d+}|{\d+,\d*})
-      name: keyword.other.qualifier.regexp.wolfram
-    - begin: \[\^?
-      end: \]
-      captures: !all keyword.control.set.regexp.wolfram
-      name: meta.set.regexp.wolfram
-      patterns:
-        - match: ({{regexp_character}})-({{regexp_character}})
-          name: constant.other.range.regexp.wolfram
-        - include: '#string-basic'
-    - begin: (\()(\?([:=!]|<[=!]))?
-      beginCaptures: !raw
-        1: keyword.control.group.regexp.wolfram
-        2: constant.character.assertion.regexp.wolfram
-      end: \)
-      endCaptures: !all keyword.control.group.regexp.wolfram
-      name: meta.group.regexp.wolfram
-      patterns: !push regular-expression
-    - match: \\\\[\S]
-      name: constant.character.escape.regexp.wolfram
-    - include: '#string-basic'
 
   boxed: !clone
     - include: '#boxed-static'
@@ -313,7 +256,7 @@ contexts:
     
     # &     Function
     - match: '&'
-      name: keyword.operator.function entity.name.function.wolfram
+      name: keyword.operator.function.wolfram entity.name.function.wolfram
     
     # ?     Definition
     # ??    FullDefinition
@@ -344,21 +287,6 @@ contexts:
       name: keyword.operator.Optional.wolfram
 
   functions: !clone
-    - !string-function
-      type: string-template
-      target: StringTemplate|TemplateApply
-      context: !push string-template
-    - !string-function
-      type: xml-template
-      target: XMLTemplate
-      context: !push xml-template
-    - !string-function
-      type: regular-expression
-      target: RegularExpression
-      context: !push regular-expression
-
-    - !slot
-
     - !function
       target: '{{identifier}}'
       identifier: !function-identifier

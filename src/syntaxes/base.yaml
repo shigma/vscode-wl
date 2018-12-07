@@ -72,6 +72,7 @@ contexts:
       end: \*\)
       name: comment.block.wolfram
       patterns: !push comment-block
+      #####
   
   named-characters:
     - match: \\\[({{named_characters}})\]
@@ -359,7 +360,7 @@ contexts:
     
     # &     Function
     - match: '&'
-      name: keyword.operator.function entity.name.function.wolfram
+      name: keyword.operator.function.wolfram entity.name.function.wolfram
     
     # ?     Definition
     # ??    FullDefinition
