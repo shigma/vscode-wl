@@ -1,19 +1,15 @@
-const builtin = require('./builtin').construct
-
 module.exports = {
   kind: 'scalar',
-  construct() {
-    return {
+  construct(tag) {
+    return tag === 'simplest' ? {
+      patterns: [
+        { include: '#function-identifier' },
+      ]
+    } : {
       patterns: [
         { include: '#undocumented-function' },
         { include: '#variable-basic' },
-        {
-          match: '(`?(?:{{symbol}}`)*){{symbol}}',
-          name: 'entity.name.function.wolfram',
-          captures: {
-            1: { name: 'entity.name.function.context.wolfram' }
-          }
-        }
+        { include: '#function-identifier' },
       ],
     }
   }

@@ -4,6 +4,7 @@ import { mergeSyntax } from '../utilities/syntax'
 function getCurrentPlugins() {
   const plugins: string[] = []
   const config = vscode.workspace.getConfiguration('wolfram')
+  if (config.get('syntax.simplestMode')) return
   if (config.get('syntax.xmlTemplate')) plugins.push('xml-template')
   if (config.get('syntax.typeInference')) plugins.push('type-inference')
   return plugins
@@ -11,7 +12,9 @@ function getCurrentPlugins() {
 
 function isSyntaxUpdated(plugins: string[]) {
   delete require.cache[require.resolve('../syntax')]
-  const _plugins = new Set(require('../syntax')._plugins)
+  const syntax = require('../syntax')
+  if (!plugins) return syntax._name === 'simplest'
+  const _plugins = new Set(syntax._plugins)
   return _plugins.size === plugins.length && plugins.every(name => _plugins.has(name))
 }
 
@@ -21,7 +24,11 @@ export function generateSyntaxFile(forced = false) {
     vscode.window.showInformationMessage('The syntax file is consistent with your configuration. There is no need to regenerate.')
     return
   }
-  mergeSyntax(require('../syntaxes/base'), ...plugins.map(name => require('../syntaxes/' + name)))
+  if (plugins) {
+    mergeSyntax(require('../syntaxes/base'), ...plugins.map(name => require('../syntaxes/' + name)))
+  } else {
+    mergeSyntax(require('../syntaxes/simplest'))
+  }
   vscode.window.showInformationMessage('The syntax file has just been regenerated and will take effect after reload.\nDo you want to reload vscode now?', 'Yes', 'No').then(answer => {
     if (answer === 'Yes') vscode.commands.executeCommand('workbench.action.reloadWindow')
   })

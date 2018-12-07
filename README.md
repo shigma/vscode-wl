@@ -30,6 +30,10 @@ This extension uses specified crawler to get symbols and their usage from [Mathe
 
 Once configuration was changed, this extension will notify you to regenerate the syntax file. You can also use command `wolfram.generateSyntaxFile` to generate syntax file.
 
+### Simplest Mode
+
+(*Invented in v1.4*) If you don't like the coloring for built-in symbols, or if you want to learn the syntaxes definition quickly (the [*src/syntaxes/base.yaml*](src/syntaxes/base.yaml) may be difficult to understand), or if you find a coloring problem in some files and don't know what caused the problem, please have a look at the simplest mode. Set `wolfram.syntax.simplestMode` to `true`, the extension will auto regenerate the simplest syntax definitions for you. Here is a well-commented source file: [*src/syntaxes/simplest.yaml*](src/syntaxes/simplest.yaml).
+
 ## TODOS
 
 - Add some code snippets.

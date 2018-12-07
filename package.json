@@ -7,7 +7,7 @@
     "url": "https://github.com/Shigma/vscode-wl.git"
   },
   "description": "Wolfram Language support for Visual Studio Code.",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "engines": {
     "vscode": "^1.29.0"
   },
@@ -36,6 +36,11 @@
           "type": "string",
           "default": null,
           "description": "The installation directory for Wolfram Mathematica."
+        },
+        "wolfram.syntax.simplestMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use the simplest syntax definition for Wolfram Language."
         },
         "wolfram.syntax.xmlTemplate": {
           "type": "boolean",

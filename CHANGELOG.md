@@ -3,9 +3,13 @@
 ## v1.4
 
 - **Feature:** Support coloring and documentation for symbols from official addons.
+- **Config:** `wolfram.syntax.typeInference`: Use the simplest syntax definition for Wolfram Language.
 - **Syntax:** Support operator `.` (Dot).
 - **Syntax:** Support default context `` ` ``.
 - **Syntax:** Support coloring for shebang.
+- **Docs:** Add documentation: wolfram language syntax overview.
+- **Enhance:** Add detailed scope names including:
+  - `punctualation.definition.comment.(begin|end).wolfram` for the beginning and ending marks of comment blocks.
 
 ## v1.3
 

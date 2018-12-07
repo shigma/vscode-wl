@@ -6,7 +6,7 @@ Note: the syntax definition uses some [YAML tags](https://yaml.org/spec/1.2/spec
 
 ## Glossary
 
-There are some basic concepts in this overview. These regular expressions are called `variables` and will be auto inserted into the syntax files through [Mustache](https://en.wikipedia.org/wiki/Mustache_(template_system)) in the building process.
+There are some basic concepts in this overview. These regular expressions are called *variables* and will be auto inserted into the syntax files through [Mustache](https://en.wikipedia.org/wiki/Mustache_(template_system)) in the building process.
 
 - *alnum:* `[0-9a-zA-Z]`
 - *number:* `(?:\d+\.?|\.\d)\d*`
@@ -76,7 +76,7 @@ Note: not every `\\\[{{alnum}}+\]` is corrent grammar, but the simplest syntax d
 
 #### Escaped Characters
 
-In Wolfram Language, Some charcters can be "escaped" while others cannot. Try the following code on Mathematica:
+In Wolfram Language, some charcters can be "escaped" while others cannot. Try the following code on Mathematica:
 
 ```mathematica
 Reap[
@@ -110,15 +110,7 @@ Note: a string which begins with a `\`, `\.` or `\:` and followed by at least on
 
 #### Embedded Box Forms
 
-A string can also include boxes which will be introduced later on. The syntax can be defined as follow:
-
-```yaml
-begin: \\!\\\(
-end: \\\)|(?=")
-name: meta.embedded.string-box.wolfram
-captures: !all keyword.operator.string-box.wolfram
-patterns: !push boxed-in-string
-```
+A string can also include [box forms](#box-forms) which will be introduced later on. But in the simplest syntax, box forms in string will not be supported.
 
 References:
 - [Input Syntax](https://reference.wolfram.com/language/tutorial/InputSyntax.html)
@@ -128,16 +120,16 @@ References:
 
 ### Operators
 
-There are so many operators in Wolfram Language! But syntax definitions for them is easy to write. You only need to check them out and write them in a proper sequence.
+There are so many operators in Wolfram Language! But syntax definitions for them is easy to write. You only need to check them out and write them in a proper sequence. I divided them into 15 categories:
 
 #### Replace
-```mathematica
+```
 /.    Replace
 //.   ReplaceAll
 ```
 
 #### Call
-```mathematica
+```
 @     Prefix
 @@    Apply
 @@@   Apply
@@ -150,7 +142,7 @@ There are so many operators in Wolfram Language! But syntax definitions for them
 ```
 
 #### Comparison
-```mathematica
+```
 >     Greater
 <     Less
 >=    GreaterEqual
@@ -162,14 +154,14 @@ There are so many operators in Wolfram Language! But syntax definitions for them
 ```
 
 #### Logical
-```mathematica
+```
 !     Not
 ||    Or
 &&    And
 ```
 
 #### Assignment
-```mathematica
+```
 =     Set
 :=    SetDelayed
 ^=    UpSet
@@ -183,25 +175,25 @@ There are so many operators in Wolfram Language! But syntax definitions for them
 ```
 
 #### Rule
-```mathematica
+```
 ->    Rule
 :>    RuleDelayed
 <->   TwoWayRule
 ```
 
 #### Condition
-```mathematica
+```
 /;    Condition
 ```
 
 #### Repeat
-```mathematica
+```
 ..    Repeated
 ...   RepeatedNull
 ```
 
 #### Arithmetic
-```mathematica
+```
 +     Plus
 -     Minus, Subtract
 *     Multiply
@@ -213,40 +205,40 @@ There are so many operators in Wolfram Language! But syntax definitions for them
 ```
 
 #### Flow
-```mathematica
+```
 <<    Get
 >>    Put
 >>>   PutAppend
 ```
 
 #### String
-```mathematica
+```
 <>    StringJoin
 ~~    StringExpression
 ```
 
 #### Span
-```mathematica
+```
 ;;    Span
 ```
 
 #### Compound
-```mathematica
+```
 ;     CompoundExpression
 ```
 
 #### Function
-```mathematica
+```
 &     Function
 ```
 
 #### Definition
-```mathematica
+```
 ?     Definition
 ??    FullDefinition
 ```
 
-Also, [Named Characters](#Named-Characters) can also be recognized as operators.
+Also, [named characters](#Named-Characters) can also be recognized as operators.
 
 Reference: [Operators](https://reference.wolfram.com/language/tutorial/Operators.html).
 
@@ -265,9 +257,10 @@ captures: !raw
 
 Functions have no difference with variables in Wolfram Language. But we should color them more like functions in a syntax definition. Here are some basic way to identify a function:
 
-- an variable before `(@{1,3}|//?@|[/@]\*)`
-- an variable after `(//|[@/]\*)`
+- an variable placed before `(@{1,3}|//?@|[/@]\*)`
+- an variable placed after `(//|[@/]\*)`
 - an variable placed on an even order in some expressions joined with some `~`
+- an variable placed after a PatternTest (which was introduced in the next part)
 
 ### Patterns
 
@@ -325,7 +318,7 @@ Box forms is a nested scope with all expression rules and some special syntaxes:
 - `\\[%&+_^]`: x-scriptBox (x can be Sub/Super/Over/Under/...)
 - `\\\*`: box constructors
 
-Reference: [String Representation of Boxes](https://reference.wolfram.com/language/tutorial/StringRepresentationOfBoxes.html)
+Reference: [String Representation of Boxes](https://reference.wolfram.com/language/tutorial/StringRepresentationOfBoxes.html).
 
 ### Comment blocks
 

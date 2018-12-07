@@ -11,6 +11,7 @@ const schema = yaml.Schema.create(
     new yaml.Type('!' + name.slice(0, -3), require(util.fullPath('build/types', name)))))
 
 const baseSyntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes/base.yaml')), { schema })
+const simplestSyntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes/simplest.yaml')), { schema })
 
 const macros = {}
 for (const key in wordList) {
@@ -19,6 +20,7 @@ for (const key in wordList) {
 
 const macroParser = new MacroParser(baseSyntax.variables).push(macros)
 delete baseSyntax.variables
+delete simplestSyntax.variables
 
 function parseContexts(syntax, name) {
   const contexts = syntax.contexts
@@ -104,9 +106,10 @@ function parseContexts(syntax, name) {
 }
 
 parseContexts(baseSyntax, 'base')
+parseContexts(simplestSyntax, 'simplest')
 
 fs.readdirSync(util.fullPath('src/syntaxes')).map(name => {
-  if (name === 'base.yaml') return
+  if (name === 'base.yaml' || name === 'simplest.yaml') return
   const syntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes', name)), { schema })
   parseContexts(syntax, name.slice(0, -5))
 })
