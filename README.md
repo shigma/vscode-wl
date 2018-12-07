@@ -32,5 +32,9 @@ Once configuration was changed, this extension will notify you to regenerate the
 
 ## TODOS
 
+- Add some code snippets.
+- A better usage document.
 - Add syntax definition for `.tm` and `.tr` files.
 - Add icons for all wolfram language related file extensions.
+
+Any issues or pull requests are welcomed!

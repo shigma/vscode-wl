@@ -1,14 +1,11 @@
 name: Wolfram Language
-
 scopeName: source.wolfram
-
-firstLineMatch: ^#!/usr/bin/env wolframscript *$
 
 variables:
   alnum: '[0-9a-zA-Z]'
   number: (?:\d+\.?|\.\d)\d*
   symbol: '[$a-zA-Z]+[$0-9a-zA-Z]*'
-  identifier: (?:{{symbol}}`)*{{symbol}}
+  identifier: '`?(?:{{symbol}}`)*{{symbol}}'
   pattern_ending: '[:-]>|:?=|\/[;.\/]|[\]\)\},;&]|>>|<<|[\n\r]'
 
   escaped_character: \\[ !"%&()*+/@\\^_`bfnrt<>]
@@ -20,6 +17,10 @@ variables:
   attribute_names: Constant|Flat|HoldAll|HoldAllComplete|HoldFirst|HoldRest|Listable|Locked|NHoldAll|NHoldFirst|NHoldRest|NumericFunction|OneIdentity|Orderless|Protected|ReadProtected|SequenceHold|Stub|Temporary
 
 patterns:
+  - match: \A(#!).*(?=$)
+    name: comment.line.shebang.wolfram
+    captures: !raw
+      1: punctuation.definition.comment.wolfram
   - include: '#expressions'
 
 contexts:
@@ -29,6 +30,17 @@ contexts:
   
   no-pattern: !clone
     - include: '#newline-escape'
+    - include: '#no-pattern-basic'
+
+  # no-pattern-in-cell:
+  #   - match: (\*\))\r?\n(\(\*)
+  #     captures: !raw
+  #       0: comment.line.cell.wolfram
+  #       1: punctualation.definition.comment.begin.wolfram
+  #       2: punctualation.definition.comment.end.wolfram
+  #   - include: '#no-pattern-basic'
+
+  no-pattern-basic: !clone
     - include: '#comments'
     - include: '#literals'
     - include: '#shorthand'
@@ -46,17 +58,16 @@ contexts:
     - include: '#comment-block'
 
   comment-static:
-    - match: (\(\*\s*)(::(?:{{alnum}}+::)+)(\s*\*\))
-      name: comment.line.cell.wolfram
-      captures: !raw
-        1: punctualation.definition.comment.begin.wolfram
-        2: 
-          patterns:
-            - match: '{{alnum}}+'
-              name: entity.name.section.wolfram
-        3: punctualation.definition.comment.end.wolfram
+    - !cell-style
+      target: Section|Subsection|Subsubsection|Title|Subtitle|Subsubtitle|Chapter|Subchapter|Subsubchapter
+      contentName: markup.heading.wolfram
+    # - !cell-style
+    #   target: Input
+    #   patterns: !push expressions-in-cell
+    - !cell-style
+      target: '{{alnum}}+'
 
-  comment-block: !clone
+  comment-block:
     - begin: \(\*
       end: \*\)
       name: comment.block.wolfram
@@ -311,14 +322,20 @@ contexts:
     - match: \/;
       name: keyword.operator.condition.wolfram
     
+    # ..    Repeated
+    # ...   RepeatedNull
+    - match: \.\.\.?
+      name: keyword.operator.repeat.wolfram
+    
     # +     Plus
     # -     Minus, Subtract
     # *     Multiply
     # /     Devide
     # ^     Power
+    # .     Dot
     # ++    Increment, PreIncrement
     # --    Decrement, PreDecrement
-    - match: \+\+|--|[+\-*/^]
+    - match: \+\+|--|[+\-*/^.]
       name: keyword.operator.arithmetic.wolfram
     
     # <<    Get
@@ -331,11 +348,6 @@ contexts:
     # ~~    StringExpression
     - match: <>|~~
       name: keyword.operator.string.wolfram
-    
-    # ..    Repeated
-    # ...   RepeatedNull
-    - match: \.\.\.?
-      name: keyword.operator.repeat.wolfram
     
     # ;;    Span
     - match: ;;
@@ -427,7 +439,7 @@ contexts:
     # variables
     - !builtin undocumented_symbols support.undocumented
     - include: '#variable-basic'
-    - match: ((?:{{symbol}}`)*){{symbol}}
+    - match: (`?(?:{{symbol}}`)*){{symbol}}
       name: variable.other.wolfram
       captures: !raw
         1: variable.other.context.wolfram

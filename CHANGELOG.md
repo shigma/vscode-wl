@@ -3,6 +3,9 @@
 ## v1.4
 
 - **Feature:** Support coloring and documentation for symbols from official addons.
+- **Syntax:** Support operator `.` (Dot).
+- **Syntax:** Support default context `` ` ``.
+- **Syntax:** Support coloring for shebang.
 
 ## v1.3
 
@@ -35,5 +38,5 @@
 - **Syntax:** Initial support for XML templates.
 - **Syntax:** Support for function `Function` and `Compile`.
 - **Syntax:** Support coloring for `\` before newlines.
-- **Syntax:** Support operators `^=`, `^:=` and `=.`.
+- **Syntax:** Support operators `^=` (UpSet), `^:=` (UpSetDelayed) and `=.` (Unset).
 - **Syntax:** Fix unexpected behaviour when colorizing expressions like `SortBy[ func]`.
