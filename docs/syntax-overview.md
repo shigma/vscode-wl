@@ -12,7 +12,7 @@ There are some basic concepts in this overview. These regular expressions are ca
 - *number:* `(?:\d+\.?|\.\d)\d*`
 - *symbol:* `[$a-zA-Z]+[$0-9a-zA-Z]*`
 
-## Basic Structure
+## Basic Patterns
 
 A simplest syntax definition for Wolfram Language support the following syntax:
 
@@ -209,6 +209,8 @@ Definition:
   ?     Definition
   ??    FullDefinition
 ```
+
+Note: Some operators may not be included in the list if they are declared in other scopes.
 
 Also, [named characters](#Named-Characters) can also be recognized as operators.
 

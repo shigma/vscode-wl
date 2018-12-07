@@ -35,8 +35,8 @@ for (const key in namespace) {
 console.log(`| Total | ${systemTotal} | ${addonsTotal} |`)
 
 console.log(`\
-| Syntax | Minified Size |
-|:------:|:-------------:|`)
+| Syntax Package | Minified Size |
+|:--------------:|:-------------:|`)
 
 for (const key in syntaxMap) {
   const { size } = fs.statSync(util.fullPath('out/syntaxes', key + '.json'))
