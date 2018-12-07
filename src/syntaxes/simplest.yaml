@@ -1,0 +1,421 @@
+name: Wolfram Language
+scopeName: source.wolfram
+
+variables:
+  alnum: '[0-9a-zA-Z]'
+  number: (?:\d+\.?|\.\d)\d*
+  symbol: '[$a-zA-Z]+[$0-9a-zA-Z]*'
+  identifier: '`?(?:{{symbol}}`)*{{symbol}}'
+  pattern_ending: '[:-]>|:?=|\/[;.\/]|[\]\)\},;&]|>>|<<|[\n\r]'
+  escaped_character: \\[ !"%&()*+/@\\^_`bfnrt<>]
+  encoded_character: \\[0-7]{3}|\\\.[0-9A-Fa-f]{2}|\\:[0-9A-Fa-f]{4}
+
+patterns:
+  - match: \A(#!).*(?=$)
+    name: comment.line.shebang.wolfram
+    captures: !raw
+      1: punctuation.definition.comment.wolfram
+  - include: '#expressions'
+
+contexts:
+  expressions:
+    - include: '#patterns'
+    - include: '#no-pattern'
+  
+  no-pattern:
+    - include: '#newline-escape'
+    - include: '#comment-block'
+    - include: '#literals'
+    - include: '#shorthand'
+    - include: '#operators'
+    - include: '#functions'
+    - include: '#variables'
+    - include: '#nested'
+
+  newline-escape:
+    - match: \\\r?\n
+      name: constant.character.escape.wolfram
+
+  comment-block:
+    - begin: \(\*
+      end: \*\)
+      name: comment.block.wolfram
+      patterns: !push comment-block
+  
+  named-characters:
+    - match: \\\[({{alnum}}+)\]
+      name: constant.character.built-in.wolfram
+
+  literals:
+    # numbers
+    - match: !no-whitespace |-
+        (?:
+          ([1-9]\d*\^\^)                                  # base
+          ((?:{{alnum}}+\.?|\.{{alnum}}){{alnum}}*)       # value
+          |
+          ({{number}})                                    # value
+        )
+        (?:
+          (\`\`(?:{{number}})?)                           # accuracy
+          |
+          (\`(?:{{number}})?)                             # precision
+        )?
+        (\*\^[+-]?{{number}})?                            # exponent
+      name: constant.numeric.wolfram
+      captures: !raw
+        1: constant.numeric.base.wolfram
+        4: constant.numeric.accuracy.wolfram
+        5: constant.numeric.precision.wolfram
+        6: constant.numeric.exponent.wolfram
+
+    # strings
+    - begin: '"'
+      end: '"'
+      beginCaptures: !all punctuation.definition.string.begin.wolfram
+      endCaptures: !all punctuation.definition.string.end.wolfram
+      name: string.quoted.wolfram
+      patterns: !push string
+
+  string:
+    - include: '#string-basic'
+
+  string-basic:
+    # named characters
+    - include: '#named-characters'
+
+    # escape characters
+    - include: '#newline-escape'
+    - match: '{{escaped_character}}'
+      name: constant.character.escape.wolfram
+    - match: '{{encoded_character}}'
+      name: constant.character.encoding.wolfram
+
+    # invalid characters
+    - match: |-
+        (?x)
+        \\[0-7]{1,2}(?=[^0-7])|
+        \\\.[0-9A-Fa-f]?(?=[^0-9A-Fa-f])|
+        \\:[0-9A-Fa-f]{0,3}(?=[^0-9A-Fa-f])
+      name: invalid.character.encoding.wolfram
+    - match: \\[a-zA-Z\[]
+      name: invalid.character.escape.wolfram
+
+  string-template:
+    - match: \`{{symbol}}\`
+      name: variable.parameter.wolfram
+    - begin: <\*
+      end: \*>|(?=")
+      name: meta.embedded.template-expression.wolfram
+      captures: !all keyword.operator.template-expression.wolfram
+      patterns: !push expressions-in-string
+    - include: '#string'
+
+  xml-template:
+    - !slot
+    - include: '#string-template'
+
+  regular-expression:
+    - match: \\\\[dDsSwW]
+      name: storage.type.character.regexp.wolfram
+    - match: (\[\^?\[)(:(?:{{character_class}}):)(\]\])
+      captures: !raw
+        1: storage.class.character.regexp.wolfram
+        2: constant.other.class.regexp.wolfram
+        3: storage.class.character.regexp.wolfram
+    - match: \\\\g?[1-9]+
+      name: storage.other.reference.regexp.wolfram
+    - match: \(\?-?[ims]\)
+      name: storage.modifier.mode.regexp.wolfram
+    - match: \.
+      name: keyword.other.any.regexp.wolfram
+    - match: ([$^]|\\\\[bB])
+      name: keyword.control.anchors.regexp.wolfram
+    - match: \|
+      name: keyword.operator.alternation.regexp.wolfram
+    - match: ([?+*]|{\d*,\d+}|{\d+,\d*})
+      name: keyword.other.qualifier.regexp.wolfram
+    - begin: \[\^?
+      end: \]
+      captures: !all keyword.control.set.regexp.wolfram
+      name: meta.set.regexp.wolfram
+      patterns:
+        - match: ({{regexp_character}})-({{regexp_character}})
+          name: constant.other.range.regexp.wolfram
+        - include: '#string-basic'
+    - begin: (\()(\?([:=!]|<[=!]))?
+      beginCaptures: !raw
+        1: keyword.control.group.regexp.wolfram
+        2: constant.character.assertion.regexp.wolfram
+      end: \)
+      endCaptures: !all keyword.control.group.regexp.wolfram
+      name: meta.group.regexp.wolfram
+      patterns: !push regular-expression
+    - match: \\\\[\S]
+      name: constant.character.escape.regexp.wolfram
+    - include: '#string-basic'
+
+  boxed: !clone
+    - include: '#boxed-static'
+    - include: '#expressions'
+  
+  boxed-static:
+    - match: \\[%&+_^]
+      name: keyword.operator.x-scriptBox.wolfram
+    - match: \\/
+      name: keyword.operator.FractionBox.wolfram
+    - match: \\@
+      name: keyword.operator.SqrtBox.wolfram
+    - match: \\`
+      name: keyword.operator.FormBox.wolfram
+    - match: \\\*
+      name: keyword.operator.box-constructor.wolfram
+
+  shorthand: !clone
+    - begin: (::)\s*({{alnum}}+)\s*(:?=)\s*(")
+      beginCaptures: !raw
+        1: keyword.operator.MessageName.wolfram
+        2: string.unquoted.wolfram
+        3: keyword.operator.assignment.wolfram
+        4: string.quoted.wolfram punctuation.definition.string.begin
+      end: '"'
+      endCaptures: !all string.quoted.wolfram punctuation.definition.string.end.wolfram
+      contentName: string.quoted.wolfram
+      patterns: !push string-template
+    - include: '#shorthand-static'
+  
+  # See: tutorial/OperatorInputForms
+  shorthand-static:
+    # Out
+    - match: '%(\d*|%*)'
+      name: storage.type.Out.wolfram
+
+    # MessageName
+    - match: (::)\s*({{alnum}}+)
+      captures: !raw
+        1: keyword.operator.MessageName.wolfram
+        2: string.unquoted.wolfram
+    
+    # Get & Put & PutAppend
+    - match: (<<|>>>?) *([a-zA-Z0-9`/.!_:$*~?\\-]+) *(?=[\)\]\},;]|$)
+      captures: !raw
+        1: keyword.operator.flow.wolfram
+        2: string.unquoted.filename.wolfram
+
+    # Infix
+    - begin: '~'
+      beginCaptures: !all keyword.operator.call.wolfram
+      end: ({{identifier}})?\s*(~)
+      endCaptures: !raw
+        1: !function-identifier
+        2: keyword.operator.call.wolfram
+      name: meta.infix.wolfram
+      patterns: !push expressions
+
+    # Postfix & Composition & RightComposition
+    - match: (//|[@/]\*)\s*({{identifier}})
+      captures: !raw
+        1: keyword.operator.call.wolfram
+        2: !function-identifier
+  
+  # See: tutorial/Operators
+  operators:
+    # /.    Replace
+    # //.   ReplaceAll
+    - match: \/\/?\.
+      name: keyword.operator.replace.wolfram
+
+    # @     Prefix
+    # @@    Apply
+    # @@@   Apply
+    # /@    Map
+    # //@   MapAll
+    # //    Postfix
+    # ~     Infix
+    # @*    Composition
+    # /*    RightComposition
+    - match: /[/@]|[/@]\*|@{1,3}|~
+      name: keyword.operator.call.wolfram
+
+    # >     Greater
+    # <     Less
+    # >=    GreaterEqual
+    # <=    LessEqual
+    # ==    Equal
+    # !=    Unequal
+    # ===   SameQ
+    # =!=   UnsameQ
+    - match: =?[=!]=|[<>]=|<(?!\|)|(?<!\|)>
+      name: keyword.operator.comparison.wolfram
+
+    # !     Not
+    # ||    Or
+    # &&    And
+    - match: \|\||&&|!
+      name: keyword.operator.logical.wolfram
+
+    # =     Set
+    # :=    SetDelayed
+    # ^=    UpSet
+    # ^:=   UpSetDelayed
+    # /:    TagSet (TagUnset, TagSetDelayed)
+    # =.    Unset
+    # +=    AddTo
+    # -=    SubtractFrom
+    # *=    TimesBy
+    # /=    DivideBy
+    - match: \^?:?=|=.|/:|[+\-*/]=
+      name: keyword.operator.assignment.wolfram
+    
+    # ->    Rule
+    # :>    RuleDelayed
+    # <->   TwoWayRule
+    - match: <->|[-:]>
+      name: keyword.operator.rule.wolfram
+    
+    # /;    Condition
+    - match: \/;
+      name: keyword.operator.condition.wolfram
+    
+    # ..    Repeated
+    # ...   RepeatedNull
+    - match: \.\.\.?
+      name: keyword.operator.repeat.wolfram
+    
+    # +     Plus
+    # -     Minus, Subtract
+    # *     Multiply
+    # /     Devide
+    # ^     Power
+    # .     Dot
+    # ++    Increment, PreIncrement
+    # --    Decrement, PreDecrement
+    - match: \+\+|--|[+\-*/^.]
+      name: keyword.operator.arithmetic.wolfram
+    
+    # <<    Get
+    # >>    Put
+    # >>>   PutAppend
+    - match: <<|>>>?
+      name: keyword.operator.flow.wolfram
+    
+    # <>    StringJoin
+    # ~~    StringExpression
+    - match: <>|~~
+      name: keyword.operator.string.wolfram
+    
+    # ;;    Span
+    - match: ;;
+      name: keyword.operator.span.wolfram
+    
+    # ;     CompoundExpression
+    - match: ;
+      name: keyword.operator.compound.wolfram
+    
+    # &     Function
+    - match: '&'
+      name: keyword.operator.function entity.name.function.wolfram
+    
+    # ?     Definition
+    # ??    FullDefinition
+    - match: \?\??
+      name: keyword.operator.definition.wolfram
+    
+    - include: '#named-characters'
+
+  patterns: !clone
+    - begin: ({{identifier}})\s*(:(?=[^:>=]))
+      beginCaptures: !raw
+        1: variable.parameter.wolfram
+        2: keyword.operator.Pattern.wolfram
+      end: (?={{pattern_ending}})
+      name: meta.pattern.wolfram
+      patterns: !push post-pattern
+  
+  post-pattern: !clone
+    - include: '#post-pattern-static'
+    - include: '#no-pattern'
+
+  post-pattern-static:
+    - match: (\?)\s*({{identifier}}(?=\s*(:|{{pattern_ending}})))?
+      captures: !raw
+        1: keyword.operator.PatternTest.wolfram
+        2: !function-identifier
+    - match: :(?=[^:>=])
+      name: keyword.operator.Optional.wolfram
+
+  functions: !clone
+    - !string-function
+      type: string-template
+      target: StringTemplate|TemplateApply
+      context: !push string-template
+    - !string-function
+      type: xml-template
+      target: XMLTemplate
+      context: !push xml-template
+    - !string-function
+      type: regular-expression
+      target: RegularExpression
+      context: !push regular-expression
+
+    - !slot
+
+    - !function
+      target: '{{identifier}}'
+      identifier: !function-identifier
+
+    - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
+      captures:
+        1: !function-identifier
+
+  variables: !clone
+    - begin: !no-whitespace |-
+        ({{identifier}})?
+        (?:
+          (_\.)               # Default
+          |
+          (_{1,3})            # Blank, BlankSequence, BlankNullSequence
+          ({{identifier}})?   # Head
+        )
+      beginCaptures: !raw
+        0: variable.parameter.wolfram
+        2: variable.parameter.default.wolfram
+        3: variable.parameter.blank.wolfram
+        4: variable.parameter.head.wolfram
+      end: (?={{pattern_ending}})
+      contentName: meta.pattern.wolfram
+      patterns: !push post-pattern
+    - include: '#variables-static'
+
+  variable-basic: 
+    - !builtin built_in_functions support.function
+
+  variables-static:
+    # variables
+    - !builtin undocumented_symbols support.undocumented
+    - include: '#variable-basic'
+    - match: (`?(?:{{symbol}}`)*){{symbol}}
+      name: variable.other.wolfram
+      captures: !raw
+        1: variable.other.context.wolfram
+
+    # slots
+    - match: (#[a-zA-Z]{{alnum}}*|#\d*)
+      name: variable.parameter.slot.wolfram
+
+  undocumented-function:
+    - !builtin undocumented_symbols support.function.undocumented support.function.context
+  
+  nested: !clone
+    - match: ','
+      name: punctuation.separator.sequence.wolfram
+    - !bracket parens
+    - !bracket parts
+    - !bracket brackets
+    - !bracket braces
+    - !bracket association
+    - begin: (\\!)?\\\(
+      beginCaptures: !all punctuation.section.box.begin.wolfram
+      end: \\\)
+      endCaptures: !all punctuation.section.box.end.wolfram
+      name: meta.box.wolfram
+      patterns: !push boxed
