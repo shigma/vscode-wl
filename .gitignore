@@ -4,8 +4,7 @@ package-lock.json
 test.*
 /dist
 /out
-vsc-extension-quickstart.md
-
+TODOS.md
 # IDE
 *.idea
 *.iml

@@ -2,7 +2,7 @@
 .vscode-test/**
 .gitattributes
 .gitignore
-vsc-extension-quickstart.md
+TODOS.md
 test.*
 build/**
 src/**

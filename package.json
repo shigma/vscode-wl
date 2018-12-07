@@ -7,7 +7,7 @@
     "url": "https://github.com/Shigma/vscode-wl.git"
   },
   "description": "Wolfram Language support for Visual Studio Code.",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "engines": {
     "vscode": "^1.29.0"
   },
@@ -40,7 +40,7 @@
         "wolfram.syntax.simplestMode": {
           "type": "boolean",
           "default": false,
-          "description": "Use the simplest syntax definition for Wolfram Language."
+          "description": "Use the simplest syntax definition for Wolfram Language. It is incompatible with plugins."
         },
         "wolfram.syntax.xmlTemplate": {
           "type": "boolean",

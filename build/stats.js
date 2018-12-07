@@ -11,13 +11,6 @@ const categoryMap = {
   undocumented_symbols: 'Undocumented',
 }
 
-const syntaxMap = {
-  simplest: 'Simplest Mode',
-  base: 'Basic Syntax',
-  'type-inference': 'Type Inference Plugin',
-  'xml-template': 'XML Template Plugin',
-}
-
 console.log(`\
 | Category | System Symbols | AddOns Symbols |
 |:--------:|:--------------:|:--------------:|`)
@@ -33,6 +26,13 @@ for (const key in namespace) {
 }
 
 console.log(`| Total | ${systemTotal} | ${addonsTotal} |`)
+
+const syntaxMap = {
+  simplest: 'Simplest Mode',
+  base: 'Basic Syntax',
+  'type-inference': 'Type Inference Plugin',
+  'xml-template': 'XML Template Plugin',
+}
 
 console.log(`\
 | Syntax Package | Minified Size |

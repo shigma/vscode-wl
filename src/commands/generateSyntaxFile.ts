@@ -14,6 +14,7 @@ function isSyntaxUpdated(plugins: string[]) {
   delete require.cache[require.resolve('../syntax')]
   const syntax = require('../syntax')
   if (!plugins) return syntax._name === 'simplest'
+  if (syntax._name === 'simplest') return false
   const _plugins = new Set(syntax._plugins)
   return _plugins.size === plugins.length && plugins.every(name => _plugins.has(name))
 }
