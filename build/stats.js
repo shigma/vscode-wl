@@ -1,4 +1,6 @@
 const namespace = require('../dist/namespace')
+const util = require('./util')
+const fs = require('fs')
 
 const isSystemSymbol = name => /^[\w$]+$/.test(name)
 
@@ -7,6 +9,13 @@ const categoryMap = {
   built_in_constants: 'Constant',
   built_in_options: 'Option',
   undocumented_symbols: 'Undocumented',
+}
+
+const syntaxMap = {
+  simplest: 'Simplest Mode',
+  base: 'Basic Syntax',
+  'type-inference': 'Type Inference Plugin',
+  'xml-template': 'XML Template Plugin',
 }
 
 console.log(`\
@@ -24,3 +33,12 @@ for (const key in namespace) {
 }
 
 console.log(`| Total | ${systemTotal} | ${addonsTotal} |`)
+
+console.log(`\
+| Syntax | Minified Size |
+|:------:|:-------------:|`)
+
+for (const key in syntaxMap) {
+  const { size } = fs.statSync(util.fullPath('out/syntaxes', key + '.json'))
+  console.log(`| ${syntaxMap[key]} | ${(size / 1000).toFixed(2)} KB |`)
+}

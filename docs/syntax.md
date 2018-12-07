@@ -122,120 +122,92 @@ References:
 
 There are so many operators in Wolfram Language! But syntax definitions for them is easy to write. You only need to check them out and write them in a proper sequence. I divided them into 15 categories:
 
-#### Replace
 ```
-/.    Replace
-//.   ReplaceAll
-```
+Replace:
+  /.    Replace
+  //.   ReplaceAll
 
-#### Call
-```
-@     Prefix
-@@    Apply
-@@@   Apply
-/@    Map
-//@   MapAll
-//    Postfix
-~     Infix
-@*    Composition
-/*    RightComposition
-```
+Call:
+  @     Prefix
+  @@    Apply
+  @@@   Apply
+  /@    Map
+  //@   MapAll
+  //    Postfix
+  ~     Infix
+  @*    Composition
+  /*    RightComposition
 
-#### Comparison
-```
->     Greater
-<     Less
->=    GreaterEqual
-<=    LessEqual
-==    Equal
-!=    Unequal
-===   SameQ
-=!=   UnsameQ
-```
+Comparison:
+  >     Greater
+  <     Less
+  >=    GreaterEqual
+  <=    LessEqual
+  ==    Equal
+  !=    Unequal
+  ===   SameQ
+  =!=   UnsameQ
 
-#### Logical
-```
-!     Not
-||    Or
-&&    And
-```
+Logical:
+  !     Not
+  ||    Or
+  &&    And
 
-#### Assignment
-```
-=     Set
-:=    SetDelayed
-^=    UpSet
-^:=   UpSetDelayed
-/:    TagSet (TagUnset, TagSetDelayed)
-=.    Unset
-+=    AddTo
--=    SubtractFrom
-*=    TimesBy
-/=    DivideBy
-```
+Assignment:
+  =     Set
+  :=    SetDelayed
+  ^=    UpSet
+  ^:=   UpSetDelayed
+  /:    TagSet (TagUnset, TagSetDelayed)
+  =.    Unset
+  +=    AddTo
+  -=    SubtractFrom
+  *=    TimesBy
+  /=    DivideBy
 
-#### Rule
-```
-->    Rule
-:>    RuleDelayed
-<->   TwoWayRule
-```
+Rule:
+  ->    Rule
+  :>    RuleDelayed
+  <->   TwoWayRule
 
-#### Condition
-```
-/;    Condition
-```
+Condition:
+  /;    Condition
 
-#### Repeat
-```
-..    Repeated
-...   RepeatedNull
-```
+Repeat:
+  ..    Repeated
+  ...   RepeatedNull
 
-#### Arithmetic
-```
-+     Plus
--     Minus, Subtract
-*     Multiply
-/     Devide
-^     Power
-.     Dot
-++    Increment, PreIncrement
---    Decrement, PreDecrement
-```
+Arithmetic:
+  +     Plus
+  -     Minus, Subtract
+  *     Multiply
+  /     Devide
+  ^     Power
+  .     Dot
+  ++    Increment, PreIncrement
+  --    Decrement, PreDecrement
 
-#### Flow
-```
-<<    Get
->>    Put
->>>   PutAppend
-```
+Flow:
+  <<    Get
+  >>    Put
+  >>>   PutAppend
 
-#### String
-```
-<>    StringJoin
-~~    StringExpression
-```
+String:
+  <>    StringJoin
+  ~~    StringExpression
 
-#### Span
-```
-;;    Span
-```
+Span:
+  ;;    Span
 
-#### Compound
-```
-;     CompoundExpression
-```
+Compound:
+  ;     CompoundExpression
 
-#### Function
-```
-&     Function
-```
+Function:
+  &     Function
 
-#### Definition
-```
-?     Definition
-??    FullDefinition
+Definition:
+  ?     Definition
+  ??    FullDefinition
 ```
 
 Also, [named characters](#Named-Characters) can also be recognized as operators.

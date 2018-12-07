@@ -32,7 +32,16 @@ Once configuration was changed, this extension will notify you to regenerate the
 
 ### Simplest Mode
 
-(*Invented in v1.4*) If you don't like the coloring for built-in symbols, or if you want to learn the syntaxes definition quickly (the [*src/syntaxes/base.yaml*](src/syntaxes/base.yaml) may be difficult to understand), or if you find a coloring problem in some files and don't know what caused the problem, please have a look at the simplest mode. Set `wolfram.syntax.simplestMode` to `true`, the extension will auto regenerate the simplest syntax definitions for you. Here is a well-commented source file: [*src/syntaxes/simplest.yaml*](src/syntaxes/simplest.yaml).
+(*Invented in v1.4*) If you don't like the coloring for built-in symbols, or if you find a coloring problem in some files and don't know what caused the problem, please have a look at the simplest mode. Set `wolfram.syntax.simplestMode` to `true`, the extension will regenerate the simplest syntax definitions for you. Here is a well-commented source file: [*src/syntaxes/simplest.yaml*](src/syntaxes/simplest.yaml).
+
+| Syntax | Minified Size |
+|:------:|:-------------:|
+| Simplest Mode | 8.38 KB |
+| Basic Syntax | 226.95 KB |
+| Type Inference Plugin | 36.84 KB |
+| XML Template Plugin | 29.86 KB |
+
+We also provide a [syntax overview](docs/syntax) for Wolfram Language.
 
 ## TODOS
 
