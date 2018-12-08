@@ -20,15 +20,11 @@ reGroup[ctx_] := Block[
 	{sym = Rest /@ ctx, fs, rs},
 	fs = Flatten@Select[sym, Length[#] == 1&];
 	rs = Select[sym, Length[#] != 1&];
-	If[
-		Length@rs == 0, Return@fs,
-		Prepend[fs, reGroup /@ GroupBy[rs, First]]
-	]
+	If[Length@rs != 0, PrependTo[fs, reGroup /@ GroupBy[rs, First]]];
+	Return@fs
 ];
-
-Table[Quiet[Needs[# <> "`"]& /@ $DistributionPackages], {i, 3}];
 SymbolTree[] := Block[
-	{names, filter, gather, split},
+	{filter, gather, split},
 	Echo[Length[names = Select[Names["*`*"], PrintableASCIIQ]], "Symbols: "];
 	filter = Select[names, !StringContainsQ[#, {"Dump`", "Private`", RegularExpression["`[a-z]"], RegularExpression["\$[0-9]"], "$$"}]&];
 	gather = GatherBy[{Context@#, Last@StringSplit[#, "`"]}& /@ filter, First];
@@ -36,4 +32,7 @@ SymbolTree[] := Block[
 	(*split=Sort[{Context@#,Last@StringSplit[#,"`"]}&/@filter]*)
 	reGroup /@ GroupBy[split, First]
 ];
-Export["Symbols.json", SymbolTree[], "RawJSON"]
+
+(* Drop global` and utils` *)
+Table[Quiet[Needs[# <> "`"]& /@ $DistributionPackages], {i, 3}];
+Export["Symbols.json", KeyDrop[SymbolTree[], "Global"], "RawJSON"]
