@@ -9,17 +9,31 @@ $ServerPackages = Select[
 ][[All, 1, -1]] // Sort
 
 
-
+(*
 (*find all undoc symbols, 1552 counted*)
 symbols = Sort@Flatten[Select[Names[# <> "`*"], PrintableASCIIQ]& /@ $CommonPackages];
 Quiet@Cases[ParallelMap[ToExpression[# <> "::usage"]&, symbols] // ProgressReport, _MessageName]
 (*About 85s, 12ms each symbol*)
+*)
 
+reGroup[ctx_] := Block[
+	{sym = Rest /@ ctx, fs, rs},
+	fs = Flatten@Select[sym, Length[#] == 1&];
+	rs = Select[sym, Length[#] != 1&];
+	If[
+		Length@rs == 0, Return@fs,
+		Prepend[fs, reGroup /@ GroupBy[rs, First]]
+	]
+];
 
-
-
-Table[Quiet[Needs[#<>"`"]&/@$DistributionPackages],{i,3}]
-Length[names=Select[Names["*`*"],PrintableASCIIQ]]
-filter=Select[names,!StringContainsQ[#,{"Dump`","Private`",RegularExpression["`[a-z]"],RegularExpression["\$[0-9]"],"$$"}]&]
-gather=GatherBy[{Context @ #,Last@StringSplit[#, "`"]}&/@filter,First];
-Export["Symbols.json",GeneralUtilities`ToAssociations@Sort[#[[1,1]]->#[[All,-1]]&/@gather],"RawJSON"]
+Table[Quiet[Needs[# <> "`"]& /@ $DistributionPackages], {i, 3}];
+SymbolTree[] := Block[
+	{names, filter, gather, split},
+	Echo[Length[names = Select[Names["*`*"], PrintableASCIIQ]], "Symbols: "];
+	filter = Select[names, !StringContainsQ[#, {"Dump`", "Private`", RegularExpression["`[a-z]"], RegularExpression["\$[0-9]"], "$$"}]&];
+	gather = GatherBy[{Context@#, Last@StringSplit[#, "`"]}& /@ filter, First];
+	split = Sort[Append[StringSplit[Context@#, "`"], Last@StringSplit[#, "`"]]& /@ filter];
+	(*split=Sort[{Context@#,Last@StringSplit[#,"`"]}&/@filter]*)
+	reGroup /@ GroupBy[split, First]
+];
+Export["Symbols.json", SymbolTree[], "RawJSON"]
