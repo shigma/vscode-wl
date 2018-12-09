@@ -58,6 +58,16 @@ contexts:
     - include: '#comment-block'
 
   comment-static:
+    # paclet info comment
+    - begin: '(\(\*) +(:[ \w-]+:)\s+'
+      beginCaptures: !raw
+        1: punctualation.definition.comment.begin.wolfram
+        2: storage.type.paclet-info.wolfram
+      name: comment.block.paclet-info.wolfram
+      contentName: variable.other.paclet-info.wolfram
+      end: \*\)
+      endCaptures: !all punctualation.definition.comment.end.wolfram
+      patterns: !push comment-block
     - !cell-style
       target: Section|Subsection|Subsubsection|Title|Subtitle|Subsubtitle|Chapter|Subchapter|Subsubchapter
       contentName: markup.heading.wolfram

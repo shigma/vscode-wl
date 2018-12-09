@@ -317,8 +317,8 @@ Note: in the inner scope of a comment block, the rule itself must be included be
 There are also some syntaxes which corresponds to a function but cannot be simply treated as operators.
 
 - [Out](https://reference.wolfram.com/language/ref/Out.html): `%(\d*|%*)`
-- [Slot](https://reference.wolfram.com/language/ref/Slot.html): `(#[a-zA-Z]{{alnum}}*|#\d*)`
 - [MessageName](https://reference.wolfram.com/language/ref/MessageName.html): `(::)\s*({{alnum}}+)`
+- [Slot](https://reference.wolfram.com/language/ref/Slot.html), [SlotSequence](https://reference.wolfram.com/language/ref/SlotSequence.html): `(#[a-zA-Z]{{alnum}}*|##?\d*)`
 - [Get](https://reference.wolfram.com/language/ref/Get.html), [Put](https://reference.wolfram.com/language/ref/Put.html), [PutAppend](https://reference.wolfram.com/language/ref/PutAppend.html): ``(<<|>>>?) *([a-zA-Z0-9`/.!_:$*~?\\-]+) *(?=[\)\]\},;]|$)``
 
 Reference: [Wolfram Language Syntax](https://reference.wolfram.com/language/guide/Syntax.html).

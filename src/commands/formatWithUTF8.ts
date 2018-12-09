@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { showMessage } from '../utilities'
+import { showMessage } from '../utilities/vsc-utils'
 
 interface Replacement {
   start: number

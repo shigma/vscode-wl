@@ -1,15 +1,5 @@
 import * as cp from 'child_process'
 import * as path from 'path'
-import * as vscode from 'vscode'
-
-export function showMessage(message: string, callback?: () => any) {
-  if (callback) {
-    return vscode.window.showInformationMessage(message, 'Yes', 'No')
-      .then(answer => answer === 'Yes' && callback())
-  } else {
-    return vscode.window.showInformationMessage(message)
-  }
-}
 
 export function fullPath(...filenames: string[]) {
   return path.resolve(__dirname, '../..', ...filenames)
