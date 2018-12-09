@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { showMessage } from '../utilities/vsc-utils'
 import { mergeSyntax } from '../utilities/syntax'
 
 function getCurrentPlugins() {
@@ -19,10 +20,10 @@ function isSyntaxUpdated(plugins: string[]) {
   return _plugins.size === plugins.length && plugins.every(name => _plugins.has(name))
 }
 
-export function generateSyntaxFile(forced = false) {
+export function generateSyntax(forced = false) {
   const plugins = getCurrentPlugins()
   if (!forced && isSyntaxUpdated(plugins)) {
-    vscode.window.showInformationMessage('The syntax file is consistent with your configuration. There is no need to regenerate.')
+    showMessage('The syntax file is consistent with your configuration. There is no need to regenerate.')
     return
   }
   if (plugins) {
@@ -30,17 +31,17 @@ export function generateSyntaxFile(forced = false) {
   } else {
     mergeSyntax(require('../syntaxes/simplest'))
   }
-  vscode.window.showInformationMessage('The syntax file has just been regenerated and will take effect after reload.\nDo you want to reload vscode now?', 'Yes', 'No').then(answer => {
-    if (answer === 'Yes') vscode.commands.executeCommand('workbench.action.reloadWindow')
+  showMessage('The syntax file has just been regenerated and will take effect after reload.\nDo you want to reload vscode now?', () => {
+    vscode.commands.executeCommand('workbench.action.reloadWindow')
   })
 }
 
-export function checkSyntaxFile() {
+export function checkSyntax() {
   if (!isSyntaxUpdated(getCurrentPlugins())) {
-    vscode.window.showInformationMessage('The syntax file currently in use is not consistent with some configurations.\nDo you want to regenerated syntax file now?', 'Yes', 'No').then(answer => {
-      if (answer === 'Yes') generateSyntaxFile(true)
+    showMessage('The syntax file currently in use is not consistent with some configurations.\nDo you want to regenerated syntax file now?', () => {
+      generateSyntax(true)
     })
   }
 }
 
-checkSyntaxFile()
+checkSyntax()

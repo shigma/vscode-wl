@@ -1,5 +1,10 @@
 # Change Log
 
+## v1.5
+
+- **Command:** `wolfram.formatWithUTF8`: Format file with UTF-8 encoding.
+- **Command:** Rename command `wolfram.generateSyntaxFile` into `wolfram.generateSyntax`.
+
 ## v1.4
 
 - **Feature:** Support coloring and documentation for symbols from official addons.

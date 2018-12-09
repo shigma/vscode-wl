@@ -63,6 +63,14 @@ addonsSymbolList = Block[{pacletinfo, extensions, context = FileBaseName[#] <> "
 systemSymbolList = If[StringStartsQ[#, "System`"], StringDrop[#, 7], #]& /@ getSymbolList["System`"];
 
 
+makeTree[list_] := KeyValueMap[
+	If[StringEndsQ[#1, "`"],
+		Prepend[makeTree @ With[{l = StringLength[#1]}, StringDrop[#, l]& /@ #2], #1],
+	#1]&,
+	GroupBy[list, First @* StringCases[(WordCharacter | "$").. ~~ ("`" | EndOfString)]]
+];
+
+
 writeJSON["out/resources/system.json", systemSymbolList];
 writeJSON["out/resources/addons.json", addonsSymbolList];
 
