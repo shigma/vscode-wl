@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { showMessage } from '../utilities/vsc-utils'
+import { showMessage } from '../utilities'
 
 interface Replacement {
   start: number
@@ -7,7 +7,7 @@ interface Replacement {
   code: number
 }
 
-function formatDocumentWithUTF8(editor: vscode.TextEditor) {
+function formatEditorWithUTF8(editor: vscode.TextEditor) {
   const document = editor.document
   const replacements: Replacement[] = []
   let text = document.getText(), index = 0
@@ -40,9 +40,9 @@ export function formatWithUTF8() {
   if (!editor) return
   if (editor.document.languageId !== 'wolfram') {
     showMessage('This file is probably not written in Wolfram Language, continue to format it into UTF-8?', () => {
-      formatDocumentWithUTF8(editor)
+      formatEditorWithUTF8(editor)
     })
   } else {
-    formatDocumentWithUTF8(editor)
+    formatEditorWithUTF8(editor)
   }
 }

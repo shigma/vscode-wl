@@ -292,7 +292,7 @@ contexts:
         1: variable.other.context.wolfram
 
     # slots
-    - match: (#[a-zA-Z]{{alnum}}*|#\d*)
+    - match: '#[a-zA-Z]{{alnum}}*|##?\d*'
       name: variable.parameter.slot.wolfram
   
   bracketing:

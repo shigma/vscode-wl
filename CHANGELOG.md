@@ -4,6 +4,7 @@
 
 - **Command:** `wolfram.formatWithUTF8`: Format file with UTF-8 encoding.
 - **Command:** Rename command `wolfram.generateSyntaxFile` into `wolfram.generateSyntax`.
+- **Syntax:** Support SlotSequence syntax: `##`, `##2`, etc.
 
 ## v1.4
 
