@@ -6,6 +6,7 @@
 - **Command:** Rename command `wolfram.generateSyntaxFile` into `wolfram.generateSyntax`.
 - **Syntax:** Support SlotSequence syntax: `##`, `##2`, etc.
 - **Syntax:** Support highlighting for paclet informations.
+- **Syntax:** Support operator `|` (Alternatives), `'` (Derivative), `**` (NonCommutativeMultiply) and `//@` (MapAll).
 
 ## v1.4
 

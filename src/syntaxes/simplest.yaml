@@ -143,7 +143,7 @@ contexts:
     # ~     Infix
     # @*    Composition
     # /*    RightComposition
-    - match: /[/@]|[/@]\*|@{1,3}|~
+    - match: //@?|[/@][@*]|@{1,3}|~
       name: keyword.operator.call.wolfram
 
     # >     Greater
@@ -197,9 +197,11 @@ contexts:
     # /     Devide
     # ^     Power
     # .     Dot
+    # '     Derivative
+    # **    NonCommutativeMultiply
     # ++    Increment, PreIncrement
     # --    Decrement, PreDecrement
-    - match: \+\+|--|[+\-*/^.]
+    - match: \+\+|--|\*\*|[+\-*/^.]|'+
       name: keyword.operator.arithmetic.wolfram
     
     # <<    Get
@@ -210,7 +212,8 @@ contexts:
     
     # <>    StringJoin
     # ~~    StringExpression
-    - match: <>|~~
+    # |     Alternatives
+    - match: <>|~~|\|
       name: keyword.operator.string.wolfram
     
     # ;;    Span

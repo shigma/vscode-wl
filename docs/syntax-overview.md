@@ -184,6 +184,10 @@ Arithmetic:
   /     Devide
   ^     Power
   .     Dot
+  !     Factorial
+  !!    Factorial2
+  '     Derivative
+  **    NonCommutativeMultiply
   ++    Increment, PreIncrement
   --    Decrement, PreDecrement
 
@@ -195,6 +199,7 @@ Flow:
 String:
   <>    StringJoin
   ~~    StringExpression
+  |     Alternatives
 
 Span:
   ;;    Span

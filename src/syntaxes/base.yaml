@@ -277,7 +277,7 @@ contexts:
   operators:
     - match: \/\/?\.
       name: keyword.operator.replace.wolfram
-    - match: /[/@]|[/@]\*|@{1,3}|~
+    - match: //@?|[/@][@*]|@{1,3}|~
       name: keyword.operator.call.wolfram
     - match: =?[=!]=|[<>]=|<(?!\|)|(?<!\|)>
       name: keyword.operator.comparison.wolfram
@@ -291,11 +291,11 @@ contexts:
       name: keyword.operator.condition.wolfram
     - match: \.\.\.?
       name: keyword.operator.repeat.wolfram
-    - match: \+\+|--|[+\-*/^.]
+    - match: \+\+|--|\*\*|[+\-*/^.]|'+
       name: keyword.operator.arithmetic.wolfram
     - match: <<|>>>?
       name: keyword.operator.flow.wolfram
-    - match: <>|~~
+    - match: <>|~~|\|
       name: keyword.operator.string.wolfram
     - match: ;;
       name: keyword.operator.span.wolfram
