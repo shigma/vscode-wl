@@ -330,6 +330,8 @@ contexts:
       name: keyword.operator.Optional.wolfram
 
   function-identifier:
+    - include: '#undocumented-function'
+    - include: '#variable-basic'
     - match: (`?(?:{{symbol}}`)*){{symbol}}
       name: entity.name.function.wolfram
       captures: !raw

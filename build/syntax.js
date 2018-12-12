@@ -1,6 +1,6 @@
-const { mergeSyntax } = require('../out/utilities/syntax')
+const mergeSyntax = require('../out/utilities/mergeSyntax').default
+const Traverser = require('../out/utilities/Traverser').default
 const MacroParser = require('./utils/macroParser')
-const Traverser = require('./utils/traverser')
 const wordList = require('../dist/macros')
 const yaml = require('js-yaml')
 const util = require('./util')
@@ -33,14 +33,14 @@ function parseContexts(syntax, name) {
   }
   
   const cloneTraverser = new Traverser({
-    parseRegex: parseInStringRegex,
-    parseName(name) {
+    onRegex: parseInStringRegex,
+    onName(name) {
       return name.replace(
         /(meta\.[\w.]+\.)(wolfram)/g,
         (_, $1, $2) => $1 + 'in-string.' + $2
       )
     },
-    parseInclude(name) {
+    onInclude(name) {
       if (name.endsWith('-in-string') || !name.startsWith('#')) return name
       const origin = name.slice(1)
       if (contexts[origin + '-in-string'] || (contexts[origin] || {})._clone) {
@@ -65,8 +65,8 @@ function parseContexts(syntax, name) {
       const stx = require(extPath + '/' + lang.path)
   
       const exteralTraverser = new Traverser({
-        parseRegex: parseInStringRegex,
-        parseInclude(innerName) {
+        onRegex: parseInStringRegex,
+        onInclude(innerName) {
           if (innerName.startsWith('#')) return `#${name}.${innerName.slice(1)}`
           return parseExternalInclude(innerName)
         }
@@ -84,11 +84,11 @@ function parseContexts(syntax, name) {
   }
   
   const macroTraverser = new Traverser({
-    parseInclude(name) {
+    onInclude(name) {
       if (name.startsWith('#') || !name.endsWith('.in-string')) return name
       return parseExternalInclude(name.slice(0, -10))
     },
-    parseRegex(source) {
+    onRegex(source) {
       return macroParser.resolve(source)
     },
   })

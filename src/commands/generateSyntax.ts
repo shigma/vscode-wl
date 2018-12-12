@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
+import mergeSyntax from '../utilities/mergeSyntax'
 import { showMessage } from '../utilities/vsc-utils'
-import { mergeSyntax } from '../utilities/syntax'
 
 function getCurrentPlugins() {
   const plugins: string[] = []

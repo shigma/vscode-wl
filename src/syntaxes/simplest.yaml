@@ -117,7 +117,7 @@ contexts:
       beginCaptures: !all keyword.operator.call.wolfram
       end: ({{identifier}})?\s*(~)
       endCaptures: !raw
-        1: !function-identifier simplest
+        1: !function-identifier
         2: keyword.operator.call.wolfram
       name: meta.infix.wolfram
       patterns: !push expressions
@@ -126,7 +126,7 @@ contexts:
     - match: (//|[@/]\*)\s*({{identifier}})
       captures: !raw
         1: keyword.operator.call.wolfram
-        2: !function-identifier simplest
+        2: !function-identifier
   
   operators:
     # /.    Replace
@@ -248,7 +248,7 @@ contexts:
     - match: (\?)\s*({{identifier}}(?=\s*(:|{{pattern_ending}})))?
       captures: !raw
         1: keyword.operator.PatternTest.wolfram
-        2: !function-identifier simplest
+        2: !function-identifier
     - match: :(?=[^:>=])
       name: keyword.operator.Optional.wolfram
     - include: '#no-pattern'
@@ -262,11 +262,11 @@ contexts:
   functions:
     - !function
       target: '{{identifier}}'
-      identifier: !function-identifier simplest
+      identifier: !function-identifier
 
     - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
       captures:
-        1: !function-identifier simplest
+        1: !function-identifier
 
   variables:
     # parameters
