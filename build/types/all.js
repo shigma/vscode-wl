@@ -1,4 +1,6 @@
+const makeRaw = require('./raw').construct
+
 module.exports = {
   kind: 'scalar',
-  construct: name => ({ 0: { name } })
+  construct: source => makeRaw({ 0: source })
 }

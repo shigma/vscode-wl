@@ -7,6 +7,7 @@
 - **Syntax:** Support SlotSequence syntax: `##`, `##2`, etc.
 - **Syntax:** Support highlighting for paclet informations.
 - **Syntax:** Support operator `|` (Alternatives), `'` (Derivative), `**` (NonCommutativeMultiply) and `//@` (MapAll).
+- **Docs:** Add documentation: extended YAML schema for TMLanguage.
 
 ## v1.4
 

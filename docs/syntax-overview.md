@@ -2,7 +2,7 @@
 
 The page introduces the basic syntax of the wolfram language and explains the structure of the syntax files. [*src/syntaxes/simplest.yaml*](../src/syntaxes/simplest.yaml) is a direct implementation of this page.
 
-Note: the syntax definition uses some [YAML tags](https://yaml.org/spec/1.2/spec.html#id2761292) which can be found in [*build/types*](../build/types).
+Note: the syntax definition uses some [YAML tags](https://yaml.org/spec/1.2/spec.html#id2761292) which can be found in [extended schema](./yaml-schema.md#basic-types). 
 
 ## Glossary
 

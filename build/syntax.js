@@ -4,11 +4,14 @@ const MacroParser = require('./utils/macroParser')
 const wordList = require('../dist/macros')
 const yaml = require('js-yaml')
 const util = require('./util')
+const path = require('path')
 const fs = require('fs')
 
 const schema = yaml.Schema.create(
-  fs.readdirSync(util.fullPath('build/types')).map(name => 
-    new yaml.Type('!' + name.slice(0, -3), require(util.fullPath('build/types', name)))))
+  fs.readdirSync(util.fullPath('build/types'))
+    .filter(name => path.extname(name) === '.js')
+    .map(name => new yaml.Type('!' + name.slice(0, -3), require(util.fullPath('build/types', name))))
+)
 
 const baseSyntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes/base.yaml')), { schema })
 const simplestSyntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes/simplest.yaml')), { schema })
