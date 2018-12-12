@@ -289,7 +289,6 @@ contexts:
       end: (?={{pattern_ending}})
       contentName: meta.pattern.wolfram
       patterns: !push post-pattern
-    - include: '#variables-static'
     
     # variables
     - match: (`?(?:{{symbol}}`)*){{symbol}}

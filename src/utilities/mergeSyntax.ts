@@ -9,11 +9,15 @@ interface DepItem {
 }
 
 class DepSet {
-  _list: DepItem[] = []
-  checked: boolean = false
+  private _list: DepItem[] = []
+  public checked: boolean = false
 
-  add(name: string, count: number = 1) {
-    const item = this._list.find(item => item.name === name)
+  public get(name: string) {
+    return this._list.find(item => item.name === name)
+  }
+
+  public add(name: string, count: number = 1) {
+    const item = this.get(name)
     if (item) {
       item.count += count
     } else {
@@ -21,14 +25,14 @@ class DepSet {
     }
   }
 
-  count(name: string) {
-    const item = this._list.find(item => item.name === name)
+  public count(name: string) {
+    const item = this.get(name)
     return item ? item.count : 0
   }
 
-  each(callback: (name: string, count: number, index: number, array: DepItem[]) => void) {
-    this._list.forEach((item, index, array) => {
-      callback(item.name, item.count, index, array)
+  public each(callback: (name: string, count: number, index: number) => void) {
+    this._list.forEach((item, index) => {
+      callback(item.name, item.count, index)
     })
   }
 }
@@ -70,8 +74,9 @@ export default function mergeSyntax(base: Syntax.BaseSyntax, ...syntaxes: Syntax
   const rootDep = new DepSet()
 
   function collectDep(context: string, count: number = 1) {
-    rootDep.add(context, count)
     const depSet = deps[context]
+    if (!depSet) return
+    rootDep.add(context, count)
     if (depSet.checked) return
     depSet.checked = true
     depSet.each(collectDep)
@@ -87,12 +92,15 @@ export default function mergeSyntax(base: Syntax.BaseSyntax, ...syntaxes: Syntax
     onInclude(include) {
       const name = include.slice(1)
       const count = rootDep.count(name)
-      console.log(name, count)
       if (!count) return
       if (count === 1) {
         const context = base.repository[name]
         delete base.repository[name]
-        return [context]
+        if (context.match || context.begin || context.end) {
+          return [context]
+        } else {
+          return context.patterns as Syntax.Rule[]
+        }
       }
       return include
     }

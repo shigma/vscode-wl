@@ -2,10 +2,13 @@ const mergeSyntax = require('../out/utilities/mergeSyntax').default
 const Traverser = require('../out/utilities/Traverser').default
 const MacroParser = require('./utils/macroParser')
 const wordList = require('../dist/macros')
+const program = require('commander')
 const yaml = require('js-yaml')
 const util = require('./util')
 const path = require('path')
 const fs = require('fs')
+
+program.parse(process.argv)
 
 const schema = yaml.Schema.create(
   fs.readdirSync(util.fullPath('build/types'))
@@ -13,7 +16,7 @@ const schema = yaml.Schema.create(
     .map(name => new yaml.Type('!' + name.slice(0, -3), require(util.fullPath('build/types', name))))
 )
 
-const baseSyntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes/base.yaml')), { schema })
+const basicSyntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes/basic.yaml')), { schema })
 const simplestSyntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes/simplest.yaml')), { schema })
 
 const macros = {}
@@ -21,8 +24,8 @@ for (const key in wordList) {
   macros[key] = wordList[key].join('|').replace(/\$/g, '\\$')
 }
 
-const macroParser = new MacroParser(baseSyntax.variables).push(macros)
-delete baseSyntax.variables
+const macroParser = new MacroParser(basicSyntax.variables).push(macros)
+delete basicSyntax.variables
 delete simplestSyntax.variables
 
 function parseContexts(syntax, name) {
@@ -110,13 +113,15 @@ function parseContexts(syntax, name) {
   return syntax
 }
 
-parseContexts(baseSyntax, 'base')
+parseContexts(basicSyntax, 'basic')
 parseContexts(simplestSyntax, 'simplest')
 
 fs.readdirSync(util.fullPath('src/syntaxes')).map(name => {
-  if (name === 'base.yaml' || name === 'simplest.yaml') return
+  if (name === 'basic.yaml' || name === 'simplest.yaml') return
   const syntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes', name)), { schema })
   parseContexts(syntax, name.slice(0, -5))
 })
+
+const baseSyntax = program.args.includes('simplest') ? simplestSyntax : basicSyntax
 
 mergeSyntax(baseSyntax)

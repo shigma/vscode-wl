@@ -29,7 +29,7 @@ console.log(`| Total | ${systemTotal} | ${addonsTotal} |`)
 
 const syntaxMap = {
   simplest: 'Simplest Mode',
-  base: 'Basic Syntax',
+  basic: 'Basic Syntax',
   'type-inference': 'Type Inference Plugin',
   'xml-template': 'XML Template Plugin',
 }
