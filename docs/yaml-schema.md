@@ -21,9 +21,9 @@ Every tag has its own environment and parameter type. In this schema, there are 
 
 ## Basic Types
 
-There are some basic types in the schema. These types are all very simple and easy to use. Note that [*src/syntaxes/simplest.yaml*](../src/syntaxes/simplest.yaml) only uses tags from this category so it may serves as a perfect example of how to use these tags.
+There are some basic types in the schema. These types are all very simple and easy to use. [*src/syntaxes/simplest.yaml*](../src/syntaxes/simplest.yaml) only uses tags from this category so it may serves as a perfect example of how to use these tags.
 
-### !raw
+### raw
 
 *(capture/mapping)* It traverses all the captures and turn every string value into objects. For example:
 
@@ -42,7 +42,7 @@ will be transpiled into
 }
 ```
 
-### !all
+### all
 
 *(capture/scalar)* It turns the parameter into the only capture of the regex. For Example:
 
@@ -58,7 +58,7 @@ will be transpiled into
 }
 ```
 
-### !push
+### push
 
 *(context/scalar)* It turns the parameter into the only rule of the context. The parameter will serves as the include target. For Example:
 
@@ -72,7 +72,7 @@ will be transpiled into
 }
 ```
 
-### !no-whitespace
+### no-whitespace
 
 *(regex/scalar)* It joins the contents together and removes the whitespace and comments in each line. For Example:
 
@@ -93,9 +93,9 @@ will be transpiled into
 }
 ```
 
-### !bracket
+### bracket
 
-*(regex/scalar)* It generates a rule for bracketing by the name of bracket given by the parameter. For Example:
+*(rule/scalar)* It generates a rule for bracketing by the name of bracket given by the parameter. For Example:
 
 ```yaml
 - !bracket association
@@ -115,3 +115,31 @@ will be transpiled into
   "patterns": [{ "include": "#expressions" }]
 }
 ```
+
+## General Types
+
+### builtin
+
+### function
+
+### string-function
+
+### cell-style
+
+### slot
+
+### clone
+
+## Type-Inference Types
+
+### flatten
+
+### first
+
+### foreach
+
+### list
+
+### next
+
+### parameter
