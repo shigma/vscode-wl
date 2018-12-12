@@ -6,15 +6,15 @@ interface TraverseOptions {
   onName?(name: string): string
   onRegex?(regex: string, key: RegexType): string
   onString?(source: string): IterableIterator<Syntax.Rule>
-  onInclude?(include: string): string | undefined
+  onInclude?(include: string): string | Syntax.Rule[]
 }
 
 /** a textmate language patterns traverser */
 export default class Traverser {
-  onName: (name: string) => string
-  onRegex: (regex: string, key: RegexType) => string
-  onString: (source: string) => IterableIterator<Syntax.Rule>
-  onInclude: (include: string) => string | undefined
+  private onName: (name: string) => string
+  private onRegex: (regex: string, key: RegexType) => string
+  private onString: (source: string) => IterableIterator<Syntax.Rule>
+  private onInclude: (include: string) => string | Syntax.Rule[]
 
   constructor(options: TraverseOptions = {}) {
     this.onName = options.onName
@@ -23,13 +23,13 @@ export default class Traverser {
     this.onInclude = options.onInclude
   }
 
-  getName(name: string): string {
+  private getName(name: string): string {
     if (!name) return
     if (!this.onName) return name
     return this.onName(name)
   }
 
-  getCaptures(captures: Syntax.Captures): Syntax.Captures {
+  private getCaptures(captures: Syntax.Captures): Syntax.Captures {
     if (!captures) return
     const result = {}
     for (const index in captures) {
@@ -40,7 +40,7 @@ export default class Traverser {
     return result
   }
 
-  * getRules(rules: Syntax.SlotRule[]): IterableIterator<Syntax.SlotRule> {
+  private* getRules(rules: Syntax.SlotRule[]): IterableIterator<Syntax.SlotRule> {
     for (let rule of rules) {
       if (typeof rule === 'string') {
         if (this.onString) {
@@ -57,8 +57,13 @@ export default class Traverser {
         }
       }
       if (this.onInclude && rule.include) {
-        rule.include = this.onInclude(rule.include)
-        if (!rule.include) continue
+        const include = this.onInclude(rule.include)
+        if (!include) continue
+        if (typeof include !== 'string') {
+          yield* include
+          continue
+        }
+        rule.include = include
       }
       rule.name = this.getName(rule.name)
       rule.contentName = this.getName(rule.contentName)
@@ -70,7 +75,7 @@ export default class Traverser {
     }
   }
 
-  traverse(rules: Syntax.SlotRule[]): Syntax.SlotRule[] {
+  public traverse(rules: Syntax.SlotRule[]): Syntax.SlotRule[] {
     if (!rules) return
     return Array.from(this.getRules(rules))
   }

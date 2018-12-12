@@ -1,6 +1,8 @@
 # Extended YAML Schema for TMLanguage
 
-The syntax definition for Wolfram Language is very complicated. It is hard to write such a big JSON file with expansibility and maintainability, so I use YAML to define all the syntaxes and use some special [tags](https://yaml.org/spec/1.2/spec.html#id2761292) to simplify the writing process. This page will tell you what the extended schema includes.
+The syntax definition for Wolfram Language is very complicated. It is hard to write such a big JSON file with expansibility and maintainability, so I use YAML to define all the syntaxes and use some special [tags](https://yaml.org/spec/1.2/spec.html#id2761292) to simplify the writing process. This page will tell you how the extended schema works.
+
+All the source files can be found under directory [*build/types*](../build/types).
 
 ## Glossary
 

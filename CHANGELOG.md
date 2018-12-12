@@ -8,6 +8,7 @@
 - **Syntax:** Support highlighting for paclet informations.
 - **Syntax:** Support operator `|` (Alternatives), `'` (Derivative), `**` (NonCommutativeMultiply) and `//@` (MapAll).
 - **Docs:** Add documentation: extended YAML schema for TMLanguage.
+- **Enhance:** Recognize shorthand syntax `%%%` (Out) as a whole.
 
 ## v1.4
 

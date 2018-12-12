@@ -77,7 +77,9 @@ function parseContexts(syntax, name) {
   
       repository[name] = { patterns: exteralTraverser.traverse(stx.patterns) }
       for (const key in stx.repository) {
-        repository[name + '.' + key] = exteralTraverser.getRule(stx.repository[key])
+        const rules = exteralTraverser.traverse([stx.repository[key]])
+        if (rules.length !== 1) throw new Error('')
+        repository[name + '.' + key] = rules[0]
       }
       return '#' + name
     } catch (error) {

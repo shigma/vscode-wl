@@ -94,7 +94,7 @@ contexts:
 
   shorthand:
     # Out
-    - match: '%(\d*|%*)'
+    - match: (%\d+|%+)
       name: storage.type.Out.wolfram
 
     # MessageName

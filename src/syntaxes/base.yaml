@@ -236,7 +236,7 @@ contexts:
     - include: '#shorthand-static'
   
   shorthand-static:
-    - match: '%(\d*|%*)'
+    - match: (%\d+|%+)
       name: storage.type.Out.wolfram
     - match: (::)\s*({{alnum}}+)
       captures: !raw

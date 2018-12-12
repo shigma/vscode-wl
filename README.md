@@ -36,12 +36,17 @@ Once configuration was changed, this extension will notify you to regenerate the
 
 | Syntax Package | Minified Size |
 |:--------------:|:-------------:|
-| Simplest Mode | 8.38 KB |
-| Basic Syntax | 226.95 KB |
-| Type Inference Plugin | 36.84 KB |
+| Simplest Mode | 8.46 KB |
+| Basic Syntax | 226.63 KB |
+| Type Inference Plugin | 36.17 KB |
 | XML Template Plugin | 29.86 KB |
 
 We also provide a well-commented [source file](src/syntaxes/simplest.yaml) and a [syntax overview](docs/syntax-overview.md) for the simplest mode.
+
+## Documentations
+
+- [Wolfram Language Syntax Overview](docs/syntax-overview.md)
+- [Extended YAML Schema for TMLanguage](docs/yaml-schema.md)
 
 ## TODOS
 
