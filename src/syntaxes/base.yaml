@@ -25,29 +25,23 @@ patterns:
 
 contexts:
   expressions: !clone
-    - include: '#patterns'
-    - include: '#no-pattern'
-  
-  no-pattern: !clone
     - include: '#newline-escape'
-    - include: '#no-pattern-basic'
+    - include: '#comments'
+    - include: '#literals'
+    - include: '#shorthand'
+    - include: '#operators'
+    - include: '#patterns'
+    - include: '#functions'
+    - include: '#variables'
+    - include: '#bracketing'
 
-  # no-pattern-in-cell:
+  # expressions-in-cell:
   #   - match: (\*\))\r?\n(\(\*)
   #     captures: !raw
   #       0: comment.line.cell.wolfram
   #       1: punctualation.definition.comment.begin.wolfram
   #       2: punctualation.definition.comment.end.wolfram
-  #   - include: '#no-pattern-basic'
-
-  no-pattern-basic: !clone
-    - include: '#comments'
-    - include: '#literals'
-    - include: '#shorthand'
-    - include: '#operators'
-    - include: '#functions'
-    - include: '#variables'
-    - include: '#bracketing'
+  #   - include: '#expressions-basic'
 
   newline-escape:
     - match: \\\r?\n
@@ -242,37 +236,31 @@ contexts:
     - include: '#shorthand-static'
   
   shorthand-static:
-    # Out
     - match: '%(\d*|%*)'
       name: storage.type.Out.wolfram
-
-    # MessageName
     - match: (::)\s*({{alnum}}+)
       captures: !raw
         1: keyword.operator.MessageName.wolfram
         2: string.unquoted.wolfram
-    
-    # Get & Put & PutAppend
     - match: (<<|>>>?) *([a-zA-Z0-9`/.!_:$*~?\\-]+) *(?=[\)\]\},;]|$)
       captures: !raw
         1: keyword.operator.flow.wolfram
         2: string.unquoted.filename.wolfram
-
-    # Infix
     - begin: '~'
       beginCaptures: !all keyword.operator.call.wolfram
       end: ({{identifier}})?\s*(~)
       endCaptures: !raw
-        1: !function-identifier
+        1: '#function-identifier'
         2: keyword.operator.call.wolfram
       name: meta.infix.wolfram
       patterns: !push expressions
-
-    # Postfix & Composition & RightComposition
     - match: (//|[@/]\*)\s*({{identifier}})
       captures: !raw
         1: keyword.operator.call.wolfram
-        2: !function-identifier
+        2: '#function-identifier'
+    - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
+      captures:
+        1: '#function-identifier'
   
   operators:
     - match: \/\/?\.
@@ -305,7 +293,6 @@ contexts:
       name: keyword.operator.function.wolfram entity.name.function.wolfram
     - match: \?\??
       name: keyword.operator.definition.wolfram
-
     - include: '#named-characters'
 
   patterns: !clone
@@ -319,13 +306,13 @@ contexts:
   
   post-pattern: !clone
     - include: '#post-pattern-static'
-    - include: '#no-pattern'
+    - include: '#expressions'
 
   post-pattern-static:
     - match: (\?)\s*({{identifier}}(?=\s*(:|{{pattern_ending}})))?
       captures: !raw
         1: keyword.operator.PatternTest.wolfram
-        2: !function-identifier
+        2: '#function-identifier'
     - match: :(?=[^:>=])
       name: keyword.operator.Optional.wolfram
 
@@ -350,16 +337,11 @@ contexts:
       type: regular-expression
       target: RegularExpression
       context: !push regular-expression
-
     - !slot
-
     - !function
       target: '{{identifier}}'
-      identifier: !function-identifier
-
-    - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
-      captures:
-        1: !function-identifier
+      captures: 
+        patterns: !push function-identifier
 
   variables: !clone
     - begin: ({{identifier}})?(?:(_\.)|(_{1,3})({{identifier}})?)
@@ -377,15 +359,12 @@ contexts:
     - !builtin built_in_functions support.function
 
   variables-static:
-    # variables
     - !builtin undocumented_symbols support.undocumented
     - include: '#variable-basic'
     - match: (`?(?:{{symbol}}`)*){{symbol}}
       name: variable.other.wolfram
       captures: !raw
         1: variable.other.context.wolfram
-
-    # slots
     - match: '#[a-zA-Z]{{alnum}}*|##?\d*'
       name: variable.parameter.slot.wolfram
 

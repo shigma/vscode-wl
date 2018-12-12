@@ -17,15 +17,12 @@ patterns:
 
 contexts:
   expressions:
-    - include: '#patterns'
-    - include: '#no-pattern'
-  
-  no-pattern:
     - include: '#newline-escape'
     - include: '#comment-block'
     - include: '#literals'
     - include: '#shorthand'
     - include: '#operators'
+    - include: '#patterns'
     - include: '#functions'
     - include: '#variables'
     - include: '#bracketing'
@@ -117,7 +114,7 @@ contexts:
       beginCaptures: !all keyword.operator.call.wolfram
       end: ({{identifier}})?\s*(~)
       endCaptures: !raw
-        1: !function-identifier
+        1: '#function-identifier'
         2: keyword.operator.call.wolfram
       name: meta.infix.wolfram
       patterns: !push expressions
@@ -126,7 +123,12 @@ contexts:
     - match: (//|[@/]\*)\s*({{identifier}})
       captures: !raw
         1: keyword.operator.call.wolfram
-        2: !function-identifier
+        2: '#function-identifier'
+
+    # At & Apply & Map & MapAll & Composition & RightComposition
+    - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
+      captures:
+        1: '#function-identifier'
   
   operators:
     # /.    Replace
@@ -248,10 +250,10 @@ contexts:
     - match: (\?)\s*({{identifier}}(?=\s*(:|{{pattern_ending}})))?
       captures: !raw
         1: keyword.operator.PatternTest.wolfram
-        2: !function-identifier
+        2: '#function-identifier'
     - match: :(?=[^:>=])
       name: keyword.operator.Optional.wolfram
-    - include: '#no-pattern'
+    - include: '#expressions'
 
   function-identifier:
     - match: (`?(?:{{symbol}}`)*){{symbol}}
@@ -260,13 +262,14 @@ contexts:
         1: entity.name.function.context.wolfram
 
   functions:
-    - !function
-      target: '{{identifier}}'
-      identifier: !function-identifier
-
-    - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
-      captures:
-        1: !function-identifier
+    - begin: ({{identifier}})\s*(\[(?!\[))
+      beginCaptures: !raw
+        1: '#function-identifier'
+        2: meta.block.wolfram punctuation.section.brackets.begin.wolfram
+      end: \]
+      endCaptures: !all meta.block.wolfram punctuation.section.brackets.end.wolfram
+      contentName: meta.block.wolfram
+      patterns: !push expressions
 
   variables:
     # parameters
@@ -306,6 +309,8 @@ contexts:
     - !bracket brackets
     - !bracket braces
     - !bracket association
+
+    # Box Forms
     - begin: (\\!)?\\\(
       beginCaptures: !all punctuation.section.box.begin.wolfram
       end: \\\)

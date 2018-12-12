@@ -108,8 +108,8 @@ contexts:
       target: '{{local_grad_var_at_2}}'
       context: !first
         - begin: \s*({{identifier}})(?=\s*[,\]])
-          beginCaptures:
-            1: !function-identifier
+          beginCaptures: !raw
+            1: '#function-identifier'
           patterns: !push grad-param
         - begin: (?=[^\]])
           patterns: !push grad-param
@@ -128,8 +128,8 @@ contexts:
       target: '{{local_sum_var_from_2}}'
       context: !first
         - begin: \s*({{identifier}})(?=\s*[,\]])
-          beginCaptures:
-            1: !function-identifier
+          beginCaptures: !raw
+            1: '#function-identifier'
           patterns: !push plot-param
         - begin: (?=[^\]])
           patterns: !push plot-param
@@ -157,20 +157,20 @@ contexts:
       target: '{{functional_first_param}}'
       context: !first
         - begin: \s*({{identifier}})(?=\s*[,\]])
-          beginCaptures:
-            1: !function-identifier
+          beginCaptures: !raw
+            1: '#function-identifier'
     - !function
       type: functional-last-param
       target: '{{functional_last_param}}'
       context:
         - match: \s*({{identifier}})(?=\s*\])
-          captures:
-            1: !function-identifier
+          captures: !raw
+            1: '#function-identifier'
         - begin: (?=[^\]])
           end: (?=\])
           patterns:
             - match: (,)\s*({{identifier}})(?=\s*\])
               captures: !raw
                 1: punctuation.separator.sequence.wolfram
-                2: !function-identifier
+                2: '#function-identifier'
             - include: '#expressions'
