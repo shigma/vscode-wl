@@ -1,3 +1,4 @@
+const all = require('./all').construct
 const raw = require('./raw').construct
 
 module.exports = {
@@ -16,8 +17,8 @@ module.exports = {
       patterns: [{
         begin: '^\\(\\*',
         end: '\\*\\)$',
-        beginCaptures: raw({ 0: 'comment.line.cell.wolfram punctualation.definition.comment.begin.wolfram' }),
-        endCaptures: raw({ 0: 'comment.line.cell.wolfram punctualation.definition.comment.end.wolfram' }),
+        beginCaptures: all('comment.line.cell.wolfram punctualation.definition.comment.begin.wolfram'),
+        endCaptures: all('comment.line.cell.wolfram punctualation.definition.comment.end.wolfram'),
         contentName: contentName || (patterns ? undefined : 'comment.line.cell.wolfram'),
         patterns,
       }],

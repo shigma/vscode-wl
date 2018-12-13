@@ -1,4 +1,4 @@
-# Extended YAML Schema for TMLanguage
+# Extended YAML Schema for Syntax Definitions
 
 The syntax definition for Wolfram Language is very complicated. It is hard to write such a big JSON file with expansibility and maintainability, so I use YAML to define all the syntaxes and use some special [tags](https://yaml.org/spec/1.2/spec.html#id2761292) to simplify the writing process. This page will tell you how the extended schema works.
 
@@ -104,7 +104,7 @@ will be transpiled into
 ```
 will be transpiled into
 ```json
-{
+[{
   "begin": "<\\|",
   "beginCaptures": {
     "0": { "name": "punctuation.section.association.begin.wolfram" }
@@ -115,7 +115,7 @@ will be transpiled into
   },
   "name": "meta.association.wolfram",
   "patterns": [{ "include": "#expressions" }]
-}
+}]
 ```
 
 ## General Types
@@ -134,14 +134,4 @@ will be transpiled into
 
 ## Type-Inference Types
 
-### flatten
-
-### first
-
-### foreach
-
-### list
-
-### next
-
-### parameter
+See [type inference]().

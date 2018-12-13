@@ -8,29 +8,45 @@ const util = require('./util')
 const path = require('path')
 const fs = require('fs')
 
-program.parse(process.argv)
+program
+  .option('-d, --development')
+  .option('-p, --production')
+  .parse(process.argv)
 
-const schema = yaml.Schema.create(
-  fs.readdirSync(util.fullPath('build/types'))
-    .filter(name => path.extname(name) === '.js')
-    .map(name => new yaml.Type('!' + name.slice(0, -3), require(util.fullPath('build/types', name))))
-)
-
-const basicSyntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes/basic.yaml')), { schema })
-const simplestSyntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes/simplest.yaml')), { schema })
+const isDev = !!program.development
 
 const macros = {}
 for (const key in wordList) {
   macros[key] = wordList[key].join('|').replace(/\$/g, '\\$')
 }
 
-const macroParser = new MacroParser(basicSyntax.variables).push(macros)
-delete basicSyntax.variables
-delete simplestSyntax.variables
+const TYPES_DIR = util.fullPath('build/types')
+const SYNTAXES_DIR = util.fullPath('src/syntaxes')
 
-function parseContexts(syntax, name) {
+const schema = yaml.Schema.create(
+  fs.readdirSync(TYPES_DIR)
+    .filter(name => path.extname(name) === '.js')
+    .map(name => new yaml.Type('!' + name.slice(0, -3), require(path.join(TYPES_DIR, name))))
+)
+
+const syntaxes = {}
+const defaultPlugins = []
+
+function parseContexts(filename) {
+  const name = filename.slice(0, -5)
+  const syntax = syntaxes[name] = yaml.safeLoad(
+    fs.readFileSync(path.join(SYNTAXES_DIR, filename)),
+    { schema },
+  )
+  syntax._name = name
+
+  const repository = syntax.repository = {}
   const contexts = syntax.contexts
-  const repository = {}
+  const macroParser = new MacroParser(syntax.variables).push(macros)
+  if (syntax.include) defaultPlugins.push(name) 
+  delete syntax.contexts
+  delete syntax.variables
+  delete syntax.include
   
   function parseInStringRegex(source, key) {
     let result = source.replace(/"/g, '\\\\"')
@@ -105,23 +121,14 @@ function parseContexts(syntax, name) {
     repository[key] = { patterns: macroTraverser.traverse(contexts[key]) }
   }
 
-  syntax._name = name
-  syntax.repository = repository
-  delete syntax.contexts
-
-  fs.writeFileSync(util.fullPath('out/syntaxes', name + '.json'), JSON.stringify(syntax))
-  return syntax
+  fs.writeFileSync(
+    util.fullPath('out/syntaxes', name + '.json'),
+    isDev ? JSON.stringify(syntax, null, 2) : JSON.stringify(syntax)
+  )
 }
 
-parseContexts(basicSyntax, 'basic')
-parseContexts(simplestSyntax, 'simplest')
+fs.readdirSync(util.fullPath(SYNTAXES_DIR)).map(parseContexts)
 
-fs.readdirSync(util.fullPath('src/syntaxes')).map(name => {
-  if (name === 'basic.yaml' || name === 'simplest.yaml') return
-  const syntax = yaml.safeLoad(fs.readFileSync(util.fullPath('src/syntaxes', name)), { schema })
-  parseContexts(syntax, name.slice(0, -5))
-})
+const base = program.args.includes('simplest') ? 'simplest' : 'basic'
 
-const baseSyntax = program.args.includes('simplest') ? simplestSyntax : basicSyntax
-
-mergeSyntax(baseSyntax)
+mergeSyntax(syntaxes[base], ...defaultPlugins.map(name => syntaxes[name]))

@@ -8,6 +8,7 @@ function getCurrentPlugins() {
   if (config.get('syntax.simplestMode')) return
   if (config.get('syntax.xmlTemplate')) plugins.push('xml-template')
   if (config.get('syntax.typeInference')) plugins.push('type-inference')
+  if (config.get('syntax.smartComments')) plugins.push('smart-comments')
   return plugins
 }
 

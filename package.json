@@ -7,7 +7,7 @@
     "url": "https://github.com/Shigma/vscode-wl.git"
   },
   "description": "Wolfram Language support for Visual Studio Code.",
-  "version": "1.5.6",
+  "version": "1.6.0",
   "engines": {
     "vscode": "^1.29.0"
   },
@@ -51,6 +51,11 @@
           "type": "boolean",
           "default": false,
           "description": "Support type inference in special functions. It uses recursive subpattern, which may cause regular expression denial of service, although it is not common."
+        },
+        "wolfram.syntax.smartComments": {
+          "type": "boolean",
+          "default": true,
+          "description": "Better coloring for comments, support paclet info, styled cells, and so on (experimental)."
         }
       }
     },
