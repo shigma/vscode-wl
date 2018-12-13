@@ -127,7 +127,7 @@ contexts:
 
     # At & Apply & Map & MapAll & Composition & RightComposition
     - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
-      captures:
+      captures: !raw
         1: '#function-identifier'
   
   operators:
@@ -238,6 +238,7 @@ contexts:
     - include: '#named-characters'
 
   patterns:
+    # patterns
     - begin: ({{identifier}})\s*(:(?=[^:>=]))
       beginCaptures: !raw
         1: variable.parameter.wolfram
@@ -245,14 +246,36 @@ contexts:
       end: (?={{pattern_ending}})
       name: meta.pattern.wolfram
       patterns: !push post-pattern
-  
+
+    # parameters
+    - begin: !no-whitespace |-
+        ({{identifier}})?
+        (?:
+          (_\.)               # Default
+          |
+          (_{1,3})            # Blank, BlankSequence, BlankNullSequence
+          ({{identifier}})?   # Head
+        )
+      beginCaptures: !raw
+        0: variable.parameter.wolfram
+        2: variable.parameter.default.wolfram
+        3: variable.parameter.blank.wolfram
+        4: variable.parameter.head.wolfram
+      end: (?={{pattern_ending}})
+      contentName: meta.pattern.wolfram
+      patterns: !push post-pattern
+    
   post-pattern:
+    # PatternTest
     - match: (\?)\s*({{identifier}}(?=\s*(:|{{pattern_ending}})))?
       captures: !raw
         1: keyword.operator.PatternTest.wolfram
         2: '#function-identifier'
+
+    # Optional
     - match: :(?=[^:>=])
       name: keyword.operator.Optional.wolfram
+      
     - include: '#expressions'
 
   function-identifier:
@@ -272,24 +295,6 @@ contexts:
       patterns: !push expressions
 
   variables:
-    # parameters
-    - begin: !no-whitespace |-
-        ({{identifier}})?
-        (?:
-          (_\.)               # Default
-          |
-          (_{1,3})            # Blank, BlankSequence, BlankNullSequence
-          ({{identifier}})?   # Head
-        )
-      beginCaptures: !raw
-        0: variable.parameter.wolfram
-        2: variable.parameter.default.wolfram
-        3: variable.parameter.blank.wolfram
-        4: variable.parameter.head.wolfram
-      end: (?={{pattern_ending}})
-      contentName: meta.pattern.wolfram
-      patterns: !push post-pattern
-    
     # variables
     - match: (`?(?:{{symbol}}`)*){{symbol}}
       name: variable.other.wolfram

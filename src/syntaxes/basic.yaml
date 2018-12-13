@@ -239,7 +239,7 @@ contexts:
         1: keyword.operator.call.wolfram
         2: '#function-identifier'
     - match: ({{identifier}})\s*(?=@{1,3}|//?@|[/@]\*)
-      captures:
+      captures: !raw
         1: '#function-identifier'
   
   operators:
@@ -283,6 +283,15 @@ contexts:
       end: (?={{pattern_ending}})
       name: meta.pattern.wolfram
       patterns: !push post-pattern
+    - begin: ({{identifier}})?(?:(_\.)|(_{1,3})({{identifier}})?)
+      beginCaptures: !raw
+        0: variable.parameter.wolfram
+        2: variable.parameter.default.wolfram
+        3: variable.parameter.blank.wolfram
+        4: variable.parameter.head.wolfram
+      end: (?={{pattern_ending}})
+      contentName: meta.pattern.wolfram
+      patterns: !push post-pattern
   
   post-pattern: !clone
     - include: '#post-pattern-static'
@@ -295,14 +304,6 @@ contexts:
         2: '#function-identifier'
     - match: :(?=[^:>=])
       name: keyword.operator.Optional.wolfram
-
-  function-identifier:
-    - include: '#undocumented-function'
-    - include: '#variable-basic'
-    - match: (`?(?:{{symbol}}`)*){{symbol}}
-      name: entity.name.function.wolfram
-      captures: !raw
-        1: entity.name.function.context.wolfram
 
   functions: !clone
     - !string-function
@@ -323,24 +324,9 @@ contexts:
       captures: 
         patterns: !push function-identifier
 
-  variables: !clone
-    - begin: ({{identifier}})?(?:(_\.)|(_{1,3})({{identifier}})?)
-      beginCaptures: !raw
-        0: variable.parameter.wolfram
-        2: variable.parameter.default.wolfram
-        3: variable.parameter.blank.wolfram
-        4: variable.parameter.head.wolfram
-      end: (?={{pattern_ending}})
-      contentName: meta.pattern.wolfram
-      patterns: !push post-pattern
-    - include: '#variables-static'
-
-  variable-basic: 
-    - !builtin built_in_functions support.function
-
-  variables-static:
+  variables:
     - !builtin undocumented_symbols support.undocumented
-    - include: '#variable-basic'
+    - include: '#variable-function'
     - match: (`?(?:{{symbol}}`)*){{symbol}}
       name: variable.other.wolfram
       captures: !raw
@@ -348,9 +334,17 @@ contexts:
     - match: '#[a-zA-Z]{{alnum}}*|##?\d*'
       name: variable.parameter.slot.wolfram
 
-  undocumented-function:
-    - !builtin undocumented_symbols support.function.undocumented support.function.undocumented.context
-  
+  variable-function: 
+    - !builtin built_in_functions support.function
+
+  function-identifier:
+    - !builtin undocumented_symbols support.function.undocumented
+    - include: '#variable-function'
+    - match: (`?(?:{{symbol}}`)*){{symbol}}
+      name: entity.name.function.wolfram
+      captures: !raw
+        1: entity.name.function.context.wolfram
+
   bracketing: !clone
     - match: ','
       name: punctuation.separator.sequence.wolfram

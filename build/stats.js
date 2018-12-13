@@ -30,6 +30,7 @@ console.log(`| Total | ${systemTotal} | ${addonsTotal} |`)
 const syntaxMap = {
   simplest: 'Simplest Mode',
   basic: 'Basic Syntax',
+  'smart-comments': 'Smart Comments Plugin',
   'type-inference': 'Type Inference Plugin',
   'xml-template': 'XML Template Plugin',
 }
