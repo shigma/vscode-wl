@@ -4,7 +4,7 @@ contexts:
   # var -> val
   # { var -> val }
   # { var } -> { val }
-  limit-param: !clone
+  limit-param:
     - !next
       - !first
         - !parameter (?=\s*->)
@@ -15,29 +15,41 @@ contexts:
               - \},
               - !parameter (?=\s*(->|[,}]))
 
+  limit-param.in-string:
+    - !embed-in-string limit-param
+
   # var1, var2, ...
-  scoped-param: !clone
+  scoped-param:
     - !foreach
       - !first
         - \},
         - !parameter
 
+  scoped-param.in-string:
+    - !embed-in-string scoped-param
+
   # var
   # { var1, var2, ... }
-  solve-param: !clone
+  solve-param:
     - !first
       - \],
       - !parameter
       - !list
         - include: '#scoped-param'
 
-  grad-param: !clone
+  solve-param.in-string:
+    - !embed-in-string solve-param
+
+  grad-param:
     - !next
       - !first
         - include: '#solve-param'
 
+  grad-param.in-string:
+    - !embed-in-string grad-param
+
   # { var, val1, val2, ... }, { var2, val1, val2, ... }
-  plot-param: !clone
+  plot-param:
     - !next
       - !foreach
         - \]
@@ -48,7 +60,10 @@ contexts:
               - \}
               - !parameter
 
-  functions: !clone
+  plot-param.in-string:
+    - !embed-in-string plot-param
+
+  functions:
     - !function
       type: scoping
       target: Block|Module|With|DynamicModule
@@ -176,3 +191,7 @@ contexts:
                 1: punctuation.separator.sequence.wolfram
                 2: '#function-identifier'
             - include: '#expressions'
+
+  functions.in-string:
+    - !embed-in-string functions
+    

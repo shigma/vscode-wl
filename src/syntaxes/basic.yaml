@@ -24,7 +24,7 @@ patterns:
   - include: '#expressions'
 
 contexts:
-  expressions: !clone
+  expressions:
     - include: '#newline-escape'
     - include: '#comments'
     - include: '#literals'
@@ -35,21 +35,19 @@ contexts:
     - include: '#variables'
     - include: '#bracketing'
 
-  # expressions-in-cell:
-  #   - match: (\*\))\r?\n(\(\*)
-  #     captures: !raw
-  #       0: comment.line.cell.wolfram
-  #       1: punctualation.definition.comment.begin.wolfram
-  #       2: punctualation.definition.comment.end.wolfram
-  #   - include: '#expressions-basic'
+  expressions.in-string:
+    - !embed-in-string expressions
 
   newline-escape:
     - match: \\\r?\n
       name: constant.character.escape.wolfram
 
-  comments: !clone
+  comments:
     - !slot
     - include: '#comment-block'
+  
+  comments.in-string:
+    - !embed-in-string comments
 
   comment-block:
     - begin: \(\*
@@ -59,13 +57,16 @@ contexts:
       name: comment.block.wolfram
       patterns: !push comment-block
   
+  comment-block.in-string:
+    - !embed-in-string comment-block
+  
   named-characters:
     - match: \\\[({{named_characters}})\]
       name: constant.character.built-in.wolfram
     - match: \\\[\w+\]
       name: invalid.character.built-in.wolfram
 
-  literals: !clone
+  literals:
     - include: '#literal-static'
     - begin: '"'
       end: '"'
@@ -73,6 +74,9 @@ contexts:
       endCaptures: !all punctuation.definition.string.end.wolfram
       name: string.quoted.wolfram
       patterns: !push string
+
+  literals.in-string:
+    - !embed-in-string literals
   
   literal-static:
     # numbers
@@ -186,9 +190,12 @@ contexts:
       name: constant.character.escape.regexp.wolfram
     - include: '#string-basic'
 
-  boxed: !clone
+  boxed:
     - include: '#boxed-static'
     - include: '#expressions'
+
+  boxed.in-string:
+    - !embed-in-string boxed
   
   boxed-static:
     - match: \\[%&+_^]
@@ -202,7 +209,7 @@ contexts:
     - match: \\\*
       name: keyword.operator.box-constructor.wolfram
 
-  shorthand: !clone
+  shorthand:
     - begin: (::)\s*({{alnum}}+)\s*(:?=)\s*(")
       beginCaptures: !raw
         1: keyword.operator.MessageName.wolfram
@@ -214,6 +221,9 @@ contexts:
       contentName: string.quoted.wolfram
       patterns: !push string-template
     - include: '#shorthand-static'
+
+  shorthand.in-string:
+    - !embed-in-string shorthand
   
   shorthand-static:
     - match: (%\d+|%+)
@@ -275,7 +285,7 @@ contexts:
       name: keyword.operator.definition.wolfram
     - include: '#named-characters'
 
-  patterns: !clone
+  patterns:
     - begin: ({{identifier}})\s*(:(?=[^:>=]))
       beginCaptures: !raw
         1: variable.parameter.wolfram
@@ -292,10 +302,16 @@ contexts:
       end: (?={{pattern_ending}})
       contentName: meta.pattern.wolfram
       patterns: !push post-pattern
+
+  patterns.in-string:
+    - !embed-in-string patterns
   
-  post-pattern: !clone
+  post-pattern:
     - include: '#post-pattern-static'
     - include: '#expressions'
+
+  post-pattern.in-string:
+    - !embed-in-string post-pattern
 
   post-pattern-static:
     - match: (\?)\s*({{identifier}}(?=\s*(:|{{pattern_ending}})))?
@@ -305,7 +321,7 @@ contexts:
     - match: :(?=[^:>=])
       name: keyword.operator.Optional.wolfram
 
-  functions: !clone
+  functions:
     - !string-function
       type: string-template
       target: StringTemplate|TemplateApply
@@ -323,6 +339,9 @@ contexts:
       target: '{{identifier}}'
       captures: 
         patterns: !push function-identifier
+
+  functions.in-string:
+    - !embed-in-string functions
 
   variables:
     - !builtin undocumented_symbols support.undocumented
@@ -345,7 +364,7 @@ contexts:
       captures: !raw
         1: entity.name.function.context.wolfram
 
-  bracketing: !clone
+  bracketing:
     - match: ','
       name: punctuation.separator.sequence.wolfram
     - !bracket parens
@@ -359,3 +378,6 @@ contexts:
       endCaptures: !all punctuation.section.box.end.wolfram
       name: meta.box.wolfram
       patterns: !push boxed
+
+  bracketing.in-string:
+    - !embed-in-string bracketing

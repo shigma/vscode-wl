@@ -28,7 +28,7 @@ export function generateSyntax(forced = false) {
     return
   }
   if (plugins) {
-    mergeSyntax(require('../syntaxes/basic'), ...plugins.map(name => require('../syntaxes/' + name)))
+    mergeSyntax(require('../syntaxes/basic'), plugins.map(name => require('../syntaxes/' + name)))
   } else {
     mergeSyntax(require('../syntaxes/simplest'))
   }

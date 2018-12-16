@@ -21,4 +21,11 @@ contexts:
     - !cell-style
       target: '{{alnum}}+'
 
+  newline-escape.in-comment:
+    - match: (\\)(*\))\r?\n(\(*)
+      captures: !raw
+        1: constant.character.escape.wolfram
+        2: punctualation.definition.comment.begin.wolfram
+        3: punctualation.definition.comment.end.wolfram
+
 
