@@ -26,7 +26,7 @@ export interface Rule {
   patterns?: SlotRule[]
 }
 
-export type SlotRule = Rule | '__SLOT__'
+export type SlotRule = Rule | string
 
 export interface Syntax {
   _name: string

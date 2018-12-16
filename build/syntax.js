@@ -13,10 +13,13 @@ const fs = require('fs')
 
 program
   .option('-d, --development')
-  .option('-p, --production')
+  .option('-s, --simplest')
+  .option('-a, --all-plugins')
+  .option('-D, --no-default')
   .parse(process.argv)
 
 const isDev = !!program.development
+const BASIC_SYNTAX = 'basic.yaml'
 const TYPES_DIR = util.fullPath('build/types')
 const SYNTAX_DIR = util.fullPath('src/syntaxes')
 
@@ -25,7 +28,7 @@ for (const key in wordList) {
   macros[key] = wordList[key].join('|').replace(/\$/g, '\\$')
 }
 
-const baseMacroParser = new MacroParser(macros)
+const macroParser = new MacroParser(macros)
 
 const schema = yaml.Schema.create(
   fs.readdirSync(TYPES_DIR)
@@ -46,8 +49,8 @@ function parseContexts(filename) {
 
   const repository = syntax.repository = {}
   const contexts = syntax.contexts
-  const macroParser = baseMacroParser.clone(syntax.variables)
-  if (syntax.include) defaultPlugins.push(name) 
+  if (filename === BASIC_SYNTAX) macroParser.push(syntax.variables)
+  if (syntax.include) defaultPlugins.push(name)
   delete syntax.contexts
   delete syntax.variables
   delete syntax.include
@@ -68,8 +71,24 @@ function parseContexts(filename) {
   return repository
 }
 
-fs.readdirSync(util.fullPath(SYNTAX_DIR)).map(parseContexts)
+[
+  BASIC_SYNTAX,
+  ...fs
+    .readdirSync(util.fullPath(SYNTAX_DIR))
+    .filter(name => name !== BASIC_SYNTAX)
+].map(parseContexts)
 
-const base = program.args.includes('simplest') ? 'simplest' : 'basic'
+const base = program.simplest ? 'simplest' : 'basic'
+const plugins = Array.from(function*(names) {
+  for (const name of names) {
+    if (name in syntaxes && name !== 'simplest' && name !== 'basic') {
+      yield syntaxes[name]
+    }
+  }
+}(program.allPlugins
+  ? Object.keys(syntaxes)
+  : program.default
+    ? defaultPlugins
+    : program.args))
 
-mergeSyntax(syntaxes[base], defaultPlugins.map(name => syntaxes[name]), isDev)
+mergeSyntax(syntaxes[base], plugins, isDev)

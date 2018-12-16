@@ -5,11 +5,11 @@ type NameType = 'name' | 'contentName' | CapturesType
 type RegexType = 'begin' | 'match' | 'end'
 
 interface TraverseOptions {
-  onName?(name: string, key: NameType): string
-  onRegex?(regex: string, key: RegexType): string
-  onString?(source: string): IterableIterator<Syntax.Rule>
-  onInclude?(include: string): string | Syntax.Rule[]
-  onContext?(include: string): boolean
+  onName?(this: Traverser, name: string, key: NameType): string
+  onRegex?(this: Traverser, regex: string, key: RegexType): string
+  onString?(this: Traverser, source: string): IterableIterator<Syntax.Rule>
+  onInclude?(this: Traverser, include: string): string | Syntax.Rule
+  onContext?(this: Traverser, name: string): boolean
 }
 
 /** a textmate language patterns traverser */
@@ -17,8 +17,8 @@ export default class Traverser {
   private onName: (name: string, key: NameType) => string
   private onRegex: (regex: string, key: RegexType) => string
   private onString: (source: string) => IterableIterator<Syntax.Rule>
-  private onInclude: (include: string) => string | Syntax.Rule[]
-  private onContext: (include: string) => boolean
+  private onInclude: (include: string) => string | Syntax.Rule
+  private onContext: (name: string) => boolean
 
   public repository: Syntax.Repository
 
@@ -65,7 +65,7 @@ export default class Traverser {
           const include = this.onInclude(rule.include)
           if (!include) continue
           if (typeof include !== 'string') {
-            yield* include
+            yield* this.getRules([include])
             continue
           }
           rule.include = include
@@ -99,19 +99,20 @@ export default class Traverser {
     return Array.from(this.getRules(rules))
   }
 
-  public traverseAll(contexts: Syntax.Repository) {
-    contexts = Object.assign({}, this.repository = contexts)
+  public traverseAll(contexts: Syntax.Repository): Syntax.Repository {
+    this.repository = contexts
+    const result = {}
     for (const key in contexts) {
       if (this.onContext && !this.onContext(key)) continue
       const patterns = this.traverse([contexts[key]])
       if (!patterns.length) {
         continue
       } else if (patterns.length === 1) {
-        contexts[key] = patterns[0] as Syntax.Rule
+        result[key] = patterns[0] as Syntax.Rule
       } else {
-        contexts[key] = { patterns }
+        result[key] = { patterns }
       }
     }
-    return contexts
+    return result
   }
 }

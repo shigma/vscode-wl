@@ -1,7 +1,7 @@
 include: false
 
 contexts:
-  xml-template:
+  slot:xml-template:
     - match: (<wolfram:comment).*?(/>)
       name: comment.line.xml-template.wolfram
       captures: !raw

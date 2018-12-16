@@ -43,7 +43,7 @@ contexts:
       name: constant.character.escape.wolfram
 
   comments:
-    - !slot
+    - include: '#slot:comments'
     - include: '#comment-block'
   
   comments.in-string:
@@ -112,7 +112,7 @@ contexts:
       end: \\\)|(?=")
       name: meta.embedded.string-box.wolfram
       captures: !all keyword.operator.string-box.wolfram
-      patterns: !push boxed-in-string
+      patterns: !push boxed.in-string
     - include: '#string-basic'
 
   string-basic:
@@ -143,11 +143,11 @@ contexts:
       end: \*>|(?=")
       name: meta.embedded.template-expression.wolfram
       captures: !all keyword.operator.template-expression.wolfram
-      patterns: !push expressions-in-string
+      patterns: !push expressions.in-string
     - include: '#string'
 
   xml-template:
-    - !slot
+    - include: '#slot:xml-template'
     - include: '#string-template'
 
   regular-expression:
@@ -334,7 +334,7 @@ contexts:
       type: regular-expression
       target: RegularExpression
       context: !push regular-expression
-    - !slot
+    - include: '#slot:functions'
     - !function
       target: '{{identifier}}'
       captures: 

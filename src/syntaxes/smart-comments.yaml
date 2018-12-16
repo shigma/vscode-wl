@@ -1,7 +1,7 @@
 include: true
 
 contexts:
-  comments:
+  slot:comments:
     # paclet info comment
     - begin: '(\(\*) +(:\w[ \w-]*\w:)\s+'
       beginCaptures: !raw
@@ -20,6 +20,9 @@ contexts:
     #   patterns: !push expressions-in-cell
     - !cell-style
       target: '{{alnum}}+'
+
+  # comment syntax cannot be embedded in strings
+  slot:comments.in-string:
 
   newline-escape.in-comment:
     - match: (\\)(*\))\r?\n(\(*)

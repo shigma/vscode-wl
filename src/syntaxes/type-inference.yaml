@@ -4,16 +4,15 @@ contexts:
   # var -> val
   # { var -> val }
   # { var } -> { val }
-  limit-param:
-    - !next
-      - !first
-        - !parameter (?=\s*->)
-        - !list
-          - (->|[,\]])
-          - !foreach
-            - !first
-              - \},
-              - !parameter (?=\s*(->|[,}]))
+  limit-param: !next
+    - patterns: !first
+      - !parameter (?=\s*->)
+      - !list
+        - (->|[,\]])
+        - !foreach
+          - !first
+            - \},
+            - !parameter (?=\s*(->|[,}]))
 
   limit-param.in-string:
     - !embed-in-string limit-param
@@ -30,40 +29,37 @@ contexts:
 
   # var
   # { var1, var2, ... }
-  solve-param:
-    - !first
-      - \],
-      - !parameter
-      - !list
-        - include: '#scoped-param'
+  solve-param: !first
+    - \],
+    - !parameter
+    - !list
+      - include: '#scoped-param'
 
   solve-param.in-string:
     - !embed-in-string solve-param
 
-  grad-param:
-    - !next
-      - !first
-        - include: '#solve-param'
+  grad-param: !next
+    - !first
+      - include: '#solve-param'
 
   grad-param.in-string:
     - !embed-in-string grad-param
 
   # { var, val1, val2, ... }, { var2, val1, val2, ... }
-  plot-param:
-    - !next
-      - !foreach
-        - \]
-        - !first
-          - \],
-          - !list
-            - !first
-              - \}
-              - !parameter
+  plot-param: !next
+    - !foreach
+      - \]
+      - !first
+        - \],
+        - !list
+          - patterns: !first
+            - \}
+            - !parameter
 
   plot-param.in-string:
     - !embed-in-string plot-param
 
-  functions:
+  slot:functions:
     - !function
       type: scoping
       target: Block|Module|With|DynamicModule
@@ -89,14 +85,13 @@ contexts:
         - !list
           - '[\],]'
           - !foreach
-            - !flatten
-              - !first
-                - \]},
-                - !parameter
-                - !list
-                  - !first
-                    - \}
-                    - !parameter
+            - !first
+              - \]},
+              - !parameter
+              - !list
+                - patterns: !first
+                  - \}
+                  - !parameter
     
     - !function
       type: limit-like
@@ -157,17 +152,16 @@ contexts:
       context: !next
         - !foreach
           - \]
-          - !flatten
-            - !first
-              - \],
-              - !list
-                - !first
-                  - \}
-                  - !parameter
-                  - !list
-                    - !first
-                      - \}
-                      - !parameter
+          - !first
+            - \],
+            - !list
+              - patterns: !first
+                - \}
+                - !parameter
+                - !list
+                  - patterns: !first
+                    - \}
+                    - !parameter
     
     - !function
       type: functional-first-param
@@ -192,6 +186,6 @@ contexts:
                 2: '#function-identifier'
             - include: '#expressions'
 
-  functions.in-string:
-    - !embed-in-string functions
+  slot:functions.in-string:
+    - !embed-in-string slot:functions
     
