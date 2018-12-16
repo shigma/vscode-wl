@@ -74,27 +74,6 @@ will be transpiled into
 }
 ```
 
-### no-whitespace
-
-*(regex/scalar)* It joins the contents together and removes the whitespace and comments in each line. For Example:
-
-```yaml
-begin: !no-whitespace |-
-  ({{identifier}})?
-  (?:
-    (_\.)               # Default
-    |
-    (_{1,3})            # Blank, BlankSequence, BlankNullSequence
-    ({{identifier}})?   # Head
-  )
-```
-will be transpiled into
-```json
-{
-  "begin": "({{identifier}})?(?:(_\\.)|(_{1,3})({{identifier}})?)"
-}
-```
-
 ### bracket
 
 *(rule/scalar)* It generates a rule for bracketing by the name of bracket given by the parameter. For Example:
@@ -127,10 +106,6 @@ will be transpiled into
 ### string-function
 
 ### cell-style
-
-### slot
-
-### clone
 
 ## Type-Inference Types
 

@@ -4,7 +4,7 @@ type CapturesType = 'captures' | 'beginCaptures' | 'endCaptures'
 type NameType = 'name' | 'contentName' | CapturesType
 type RegexType = 'begin' | 'match' | 'end'
 
-interface TraverseOptions {
+export interface TraverseOptions {
   onName?(this: Traverser, name: string, key: NameType): string
   onRegex?(this: Traverser, regex: string, key: RegexType): string
   onString?(this: Traverser, source: string): IterableIterator<Syntax.Rule>
@@ -14,13 +14,13 @@ interface TraverseOptions {
 
 /** a textmate language patterns traverser */
 export default class Traverser {
-  private onName: (name: string, key: NameType) => string
-  private onRegex: (regex: string, key: RegexType) => string
-  private onString: (source: string) => IterableIterator<Syntax.Rule>
-  private onInclude: (include: string) => string | Syntax.Rule
-  private onContext: (name: string) => boolean
+  onName: (name: string, key: NameType) => string
+  onRegex: (regex: string, key: RegexType) => string
+  onString: (source: string) => IterableIterator<Syntax.Rule>
+  onInclude: (include: string) => string | Syntax.Rule
+  onContext: (name: string) => boolean
 
-  public repository: Syntax.Repository
+  repository: Syntax.Repository
 
   constructor(options: TraverseOptions = {}) {
     this.onName = options.onName
@@ -100,8 +100,11 @@ export default class Traverser {
   }
 
   public traverseAll(contexts: Syntax.Repository): Syntax.Repository {
-    this.repository = contexts
     const result = {}
+    this.repository = new Proxy({}, {
+      get: (_, key) => contexts[key as string],
+      set: (_, key, value) => result[key] = value,
+    })
     for (const key in contexts) {
       if (this.onContext && !this.onContext(key)) continue
       const patterns = this.traverse([contexts[key]])

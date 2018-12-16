@@ -2,7 +2,7 @@ include: true
 
 contexts:
   slot:comments:
-    # paclet info comment
+    # paclet info
     - begin: '(\(\*) +(:\w[ \w-]*\w:)\s+'
       beginCaptures: !raw
         1: punctualation.definition.comment.begin.wolfram
@@ -12,23 +12,25 @@ contexts:
       end: \*\)
       endCaptures: !all punctualation.definition.comment.end.wolfram
       patterns: !push comment-block
+
+    # cell styles
     - !cell-style
       target: Section|Subsection|Subsubsection|Title|Subtitle|Subsubtitle|Chapter|Subchapter|Subsubchapter
       contentName: markup.heading.wolfram
-    # - !cell-style
-    #   target: Input
-    #   patterns: !push expressions-in-cell
+    - !cell-style
+      target: Input
+      patterns: !push expressions.in-comment
     - !cell-style
       target: '{{alnum}}+'
+      contentName: variable.other.text.wolfram
 
-  # comment syntax cannot be embedded in strings
-  slot:comments.in-string:
+  # special comment syntaxes cannot be embedded in strings and comments
+  slot:comments.in-string: []
+  slot:comments.in-comment: []
 
   newline-escape.in-comment:
-    - match: (\\)(*\))\r?\n(\(*)
+    - match: (\\)(\*\))\r?\n(\(\*)
       captures: !raw
         1: constant.character.escape.wolfram
         2: punctualation.definition.comment.begin.wolfram
         3: punctualation.definition.comment.end.wolfram
-
-

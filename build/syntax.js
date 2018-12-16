@@ -15,7 +15,6 @@ program
   .option('-d, --development')
   .option('-s, --simplest')
   .option('-a, --all-plugins')
-  .option('-D, --no-default')
   .parse(process.argv)
 
 const isDev = !!program.development
@@ -49,18 +48,35 @@ function parseContexts(filename) {
 
   const repository = syntax.repository = {}
   const contexts = syntax.contexts
+  const embedding = syntax.embedding || {}
   if (filename === BASIC_SYNTAX) macroParser.push(syntax.variables)
   if (syntax.include) defaultPlugins.push(name)
   delete syntax.contexts
   delete syntax.variables
   delete syntax.include
+  delete syntax.embedding
   
   const macroTraverser = new Traverser({
     onRegex: source => macroParser.resolve(source),
   })
 
-  for (const key in contexts) {
+  const keys = Object.keys(contexts)
+  for (const key of keys) {
     repository[key] = { patterns: macroTraverser.traverse(contexts[key]) }
+  }
+
+  for (const key of embedding.string === 'all' ? keys : embedding.string || []) {
+    if (key.endsWith('.in-string') || key.endsWith('.in-comment') || !contexts[key]) continue
+    repository[key + '.in-string'] = {
+      patterns: ['embed-in-string:' + key]
+    }
+  }
+
+  for (const key of embedding.comment === 'all' ? keys : embedding.comment || []) {
+    if (key.endsWith('.in-string') || key.endsWith('.in-comment') || !contexts[key]) continue
+    repository[key + '.in-comment'] = {
+      patterns: ['embed-in-comment:' + key]
+    }
   }
 
   fs.writeFileSync(
@@ -85,10 +101,6 @@ const plugins = Array.from(function*(names) {
       yield syntaxes[name]
     }
   }
-}(program.allPlugins
-  ? Object.keys(syntaxes)
-  : program.default
-    ? defaultPlugins
-    : program.args))
+}(program.allPlugins ? Object.keys(syntaxes) : defaultPlugins))
 
 mergeSyntax(syntaxes[base], plugins, isDev)

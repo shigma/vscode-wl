@@ -1,5 +1,9 @@
 # Change Log
 
+## v1.6
+
+- **Config:** `wolfram.syntax.smartComments`: Better coloring for comments, support paclet info, styled cells, and so on (experimental).
+
 ## v1.5
 
 - **Command:** `wolfram.formatWithUTF8`: Format file with UTF-8 encoding.

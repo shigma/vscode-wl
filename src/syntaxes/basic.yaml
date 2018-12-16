@@ -23,6 +23,35 @@ patterns:
       1: punctuation.definition.comment.wolfram
   - include: '#expressions'
 
+embedding:
+  string:
+    - expressions
+    - comments
+    - comment-block
+    - literals
+    - boxed
+    - shorthand
+    - patterns
+    - post-pattern
+    - functions
+    - bracketing
+
+  comment:
+    - expressions
+    - comments
+    - comment-block
+    - literals
+    - string
+    - string-template
+    - xml-template
+    - regular-expression
+    - boxed
+    - shorthand
+    - patterns
+    - post-pattern
+    - functions
+    - bracketing
+
 contexts:
   expressions:
     - include: '#newline-escape'
@@ -35,9 +64,6 @@ contexts:
     - include: '#variables'
     - include: '#bracketing'
 
-  expressions.in-string:
-    - !embed-in-string expressions
-
   newline-escape:
     - match: \\\r?\n
       name: constant.character.escape.wolfram
@@ -45,9 +71,6 @@ contexts:
   comments:
     - include: '#slot:comments'
     - include: '#comment-block'
-  
-  comments.in-string:
-    - !embed-in-string comments
 
   comment-block:
     - begin: \(\*
@@ -56,9 +79,6 @@ contexts:
       endCaptures: !all punctualation.definition.comment.end.wolfram
       name: comment.block.wolfram
       patterns: !push comment-block
-  
-  comment-block.in-string:
-    - !embed-in-string comment-block
   
   named-characters:
     - match: \\\[({{named_characters}})\]
@@ -74,13 +94,11 @@ contexts:
       endCaptures: !all punctuation.definition.string.end.wolfram
       name: string.quoted.wolfram
       patterns: !push string
-
-  literals.in-string:
-    - !embed-in-string literals
   
   literal-static:
     # numbers
-    - match: !no-whitespace |-
+    - match: |-
+        (?x)
         (?:
           ([1-9]\d*\^\^)                                  # base
           ((?:{{alnum}}+\.?|\.{{alnum}}){{alnum}}*)       # value
@@ -193,9 +211,6 @@ contexts:
   boxed:
     - include: '#boxed-static'
     - include: '#expressions'
-
-  boxed.in-string:
-    - !embed-in-string boxed
   
   boxed-static:
     - match: \\[%&+_^]
@@ -221,9 +236,6 @@ contexts:
       contentName: string.quoted.wolfram
       patterns: !push string-template
     - include: '#shorthand-static'
-
-  shorthand.in-string:
-    - !embed-in-string shorthand
   
   shorthand-static:
     - match: (%\d+|%+)
@@ -302,16 +314,10 @@ contexts:
       end: (?={{pattern_ending}})
       contentName: meta.pattern.wolfram
       patterns: !push post-pattern
-
-  patterns.in-string:
-    - !embed-in-string patterns
   
   post-pattern:
     - include: '#post-pattern-static'
     - include: '#expressions'
-
-  post-pattern.in-string:
-    - !embed-in-string post-pattern
 
   post-pattern-static:
     - match: (\?)\s*({{identifier}}(?=\s*(:|{{pattern_ending}})))?
@@ -339,9 +345,6 @@ contexts:
       target: '{{identifier}}'
       captures: 
         patterns: !push function-identifier
-
-  functions.in-string:
-    - !embed-in-string functions
 
   variables:
     - !builtin undocumented_symbols support.undocumented
@@ -378,6 +381,3 @@ contexts:
       endCaptures: !all punctuation.section.box.end.wolfram
       name: meta.box.wolfram
       patterns: !push boxed
-
-  bracketing.in-string:
-    - !embed-in-string bracketing

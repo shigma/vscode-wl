@@ -43,7 +43,8 @@ contexts:
   
   literals:
     # numbers
-    - match: !no-whitespace |-
+    - match: |-
+        (?x)
         (?:
           ([1-9]\d*\^\^)                                  # base
           ((?:{{alnum}}+\.?|\.{{alnum}}){{alnum}}*)       # value
@@ -248,7 +249,8 @@ contexts:
       patterns: !push post-pattern
 
     # parameters
-    - begin: !no-whitespace |-
+    - begin: |-
+        (?x)
         ({{identifier}})?
         (?:
           (_\.)               # Default

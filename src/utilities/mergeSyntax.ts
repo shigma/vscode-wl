@@ -1,59 +1,32 @@
 import * as fs from 'fs'
-import * as utils from '.'
+import * as util from '.'
 import * as Syntax from './syntax'
-
-import Traverser from './traverser'
 import minifySyntax from './minifySyntax'
+import Traverser, { TraverseOptions } from './traverser'
+
+interface EmbedOptions {
+  name: string
+  repository: Syntax.Repository
+  onRegex: TraverseOptions["onRegex"]
+}
 
 class EmbedTraverser extends Traverser {
-  constructor(escape: string | RegExp, name: string, repository: Syntax.Repository) {
-    const insertion = '.' + name
+  constructor(options: EmbedOptions) {
+    const insertion = '.' + options.name
     const endPostfix = `|(?=${escape})`
     super({
-      onRegex(source, key) {
-        let result = source.replace(/"/g, '\\\\"')
-        if (key === 'end') result += endPostfix
-        return result
-      },
+      onRegex: options.onRegex,
       onName: name => name.replace(
         /(meta\.[\w.]+)(\.\w+)/g,
         (_, $1, $2) => $1 + insertion + $2,
       ),
       onInclude(name) {
         if (name.endsWith(insertion) || !name.startsWith('#')) return name
-        return repository[name.slice(1) + insertion] ? name + insertion : name
+        return options.repository[name.slice(1) + insertion] ? name + insertion : name
       },
     })
   }
 }
-
-// function parseExternalInclude(name) {
-//   const extPath = util.vscPath('resources/app/extensions', name.match(/\.(\w+)$/)[1])
-//   try {
-//     const pj = require(extPath + '/package.json')
-//     const lang = pj.contributes.grammars.find(({ scopeName }) => scopeName === name)
-//     const stx = require(extPath + '/' + lang.path)
-
-//     const exteralTraverser = new Traverser({
-//       onRegex: parseInStringRegex,
-//       onInclude(innerName) {
-//         if (innerName.startsWith('#')) return `#${name}.${innerName.slice(1)}`
-//         return parseExternalInclude(innerName)
-//       }
-//     })
-
-//     repository[name] = { patterns: exteralTraverser.traverse(stx.patterns) }
-//     for (const key in stx.repository) {
-//       const rules = exteralTraverser.traverse([stx.repository[key]])
-//       if (rules.length !== 1) throw new Error('')
-//       repository[name + '.' + key] = rules[0]
-//     }
-//     return '#' + name
-//   } catch (error) {
-//     // console.error(error)
-//     return name
-//   }
-// }
 
 export default function mergeSyntax(base: Syntax.BaseSyntax, syntaxes: Syntax.Syntax[] = [], isDev = false) {
   base._plugins = []
@@ -65,13 +38,67 @@ export default function mergeSyntax(base: Syntax.BaseSyntax, syntaxes: Syntax.Sy
   })
 
   // Step 2: generate embedded contexts
-  const stringEmbedder = new EmbedTraverser('"', 'in-string', base.repository)
-  // const embedInCell = new EmbedTraverser(/\*\)(\r?\n|\Z)/, 'in-cell', base.repository)
+  const stringEmbedder = new EmbedTraverser({
+    name: 'in-string',
+    repository: base.repository,
+    onRegex(source, key) {
+      let result = source.replace(/"/g, '\\\\"')
+      if (key === 'end') result += `|(?=")`
+      return result
+    },
+  })
+
+  const commentEmbedder = new EmbedTraverser({
+    name: 'in-comment',
+    repository: base.repository,
+    onRegex(source, key) {
+      return key === 'end' ? source + `|(?=\\*\\)(\\r?\\n|\\Z))` : source
+    },
+  })
+
+  function parseExternalInclude(this: Traverser, name: string): Syntax.Rule {
+    const extPath = util.vscPath('resources/app/extensions', name.match(/\.(\w+)$/)[1])
+    try {
+      const { contributes } = require(extPath + '/package.json')
+      const lang = contributes.grammars.find(({ scopeName }) => scopeName === name)
+      const syntax = require(extPath + '/' + lang.path)
+
+      const externalTraverser = new Traverser({
+        onRegex: stringEmbedder.onRegex,
+        onInclude: include => {
+          if (include.startsWith('#')) {
+            return include.startsWith('#external.')
+              ? include
+              : `#external.${name}:${include.slice(1)}`
+          } else {
+            return parseExternalInclude.call(this, include)
+          }
+        },
+      })
+
+      for (const key in syntax.repository) {
+        const patterns = externalTraverser.traverse([syntax.repository[key]])
+        this.repository[`external.${name}:${key}`] = { patterns }
+      }
+
+      return { patterns: externalTraverser.traverse(syntax.patterns) }
+    } catch (error) {
+      return { patterns: [] }
+    }
+  }
   
   base.repository = new Traverser({
     * onString(name) {
       if (name.startsWith('embed-in-string:')) {
-        yield* stringEmbedder.traverse([this.repository[name.slice(16)]]) as Syntax.Rule[]
+        const target = name.slice(16)
+        if (target.startsWith('external.')) {
+          yield parseExternalInclude.call(this, target.slice(9))
+        } else if (this.repository[target]) {
+          yield* stringEmbedder.traverse([this.repository[target]]) as Syntax.Rule[]
+        }
+      } else if (name.startsWith('embed-in-comment:')) {
+        const target = name.slice(17)
+        yield* commentEmbedder.traverse([this.repository[target]]) as Syntax.Rule[]
       }
     },
   }).traverseAll(base.repository)
@@ -80,7 +107,7 @@ export default function mergeSyntax(base: Syntax.BaseSyntax, syntaxes: Syntax.Sy
   base.repository = minifySyntax(base.patterns, base.repository)
 
   fs.writeFileSync(
-    utils.fullPath('out/syntax.json'),
+    util.fullPath('out/syntax.json'),
     isDev ? JSON.stringify(base, null, 2) : JSON.stringify(base),
   )
 }

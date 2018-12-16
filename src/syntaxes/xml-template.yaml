@@ -1,5 +1,8 @@
 include: false
 
+embedding:
+  comments: all
+
 contexts:
   slot:xml-template:
     - match: (<wolfram:comment).*?(/>)
@@ -12,4 +15,4 @@ contexts:
       beginCaptures: !all punctualation.definition.comment.begin.wolfram
       endCaptures: !all punctualation.definition.comment.end.wolfram
       name: comment.block.xml-template.wolfram
-    - include: text.xml.in-string
+    - !embed-in-string external.text.xml
