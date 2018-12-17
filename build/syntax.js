@@ -22,6 +22,8 @@ const BASIC_SYNTAX = 'basic.yaml'
 const TYPES_DIR = util.fullPath('build/types')
 const SYNTAX_DIR = util.fullPath('src/syntaxes')
 
+wordList.named_characters = require('../out/resources/characters').map(item => item[1])
+
 const macros = {}
 for (const key in wordList) {
   macros[key] = wordList[key].join('|').replace(/\$/g, '\\$')

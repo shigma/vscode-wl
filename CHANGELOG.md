@@ -2,7 +2,11 @@
 
 ## v1.6
 
-- **Config:** `wolfram.syntax.smartComments`: Better coloring for comments, support paclet info, styled cells, and so on (experimental).
+- **Command:** `wolfram.formatWithASCII`: Format file with ASCII encoding.
+- **Config:** `wolfram.syntax.smartComments`: Better coloring for comments, support paclet info and styled cells.
+- **Config:** `wolfram.formatter.namedCharacters`: Always use named characters to format files if possible.
+- **Config:** `wolfram.formatter.extendedAscii`: The default method to format extended ASCII characters.
+- **Enhance:** Support more named characters in syntax definitions. (1008 -> 1048)
 
 ## v1.5
 

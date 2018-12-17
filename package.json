@@ -7,7 +7,7 @@
     "url": "https://github.com/Shigma/vscode-wl.git"
   },
   "description": "Wolfram Language support for Visual Studio Code.",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "engines": {
     "vscode": "^1.29.0"
   },
@@ -56,6 +56,22 @@
           "type": "boolean",
           "default": true,
           "description": "Better coloring for comments, support paclet info, styled cells, and so on (experimental)."
+        },
+        "wolfram.formatter.namedCharacters": {
+          "type": "boolean",
+          "default": true,
+          "description": "Always use named characters to format files if possible."
+        },
+        "wolfram.formatter.extendedAscii": {
+          "type": "string",
+          "enum": [
+            "original",
+            "3-digit octal",
+            "2-digit hexidecimal",
+            "4-digit hexidecimal"
+          ],
+          "default": "3-digit octal",
+          "description": "The default method to format extended ASCII characters."
         }
       }
     },
@@ -79,6 +95,11 @@
       {
         "command": "wolfram.formatWithUTF8",
         "title": "Format File With UTF-8 encoding",
+        "category": "Wolfram"
+      },
+      {
+        "command": "wolfram.formatWithASCII",
+        "title": "Format File With ASCII encoding",
         "category": "Wolfram"
       }
     ],

@@ -162,9 +162,7 @@ classifiedNamespace = Import[resolveFileName["dist/namespace.json"]];
 getGuideText[filename_] := Import[FileNameJoin[{$InstallationDirectory, "Documentation/English/System/Guides", filename <> ".nb"}], {"Cells", "GuideText"}];
 
 
-{namedCharacters, {namedCharactersDict}} = Reap[Block[{code, name},
-	name = StringTake[#[[-1, 1]], {3, -2}];
-	code = Quiet @ ToCharacterCode[#[[1, 1, 1]], "Unicode"][[1]];
-	If[NumberQ[code], Sow[StringPadLeft[IntegerString[code, 16], 4, "0"] -> name]]; name
-]& /@ getGuideText["ListingOfNamedCharacters"][[All, 1, 1]]];
-Export[resolveFileName["dist/namedCharacters.json"], namedCharactersDict];
+namedCharacters = 
+	Import[FileNameJoin[{$InstallationDirectory, "SystemFiles/FrontEnd/TextResources/UnicodeCharacters.tr"}], "String"] // \
+	StringCases[RegularExpression["(?m)^0x([\\dA-F]{4})\t+\\\\\\[(\\w+)\\]"] :> {FromDigits["$1", 16], "$2"}];
+writeJSON["out/resources/characters.json", namedCharacters];
