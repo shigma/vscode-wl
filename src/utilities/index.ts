@@ -7,9 +7,16 @@ export function fullPath(...filenames: string[]) {
 }
 
 export function vscPath(...filenames: string[]) {
-  const match = process.env.PATH.match(/(;|^)[^;]+Microsoft VS Code\\bin(;|$)/g)
-  if (!match) return
-  return path.resolve(match[0].replace(/;/g, ''), '..', ...filenames)
+  let basePath: string
+  if (process.argv0.endsWith(path.join('Microsoft VS Code', 'Code.exe'))) {
+    basePath = path.join(require.main.filename, '../../../..')
+  } else {
+    let paths = process.env.PATH.match(/(;|^)[^;]+Microsoft VS Code[\\/]bin(;|$)/g)
+    if (!paths) return
+    paths = paths.map(str => str.replace(/;/g, ''))
+    basePath = paths.find(str => str.startsWith(process.env.LOCALAPPDATA)) || paths[0]
+  }
+  return path.resolve(basePath, 'resources/app', ...filenames)
 }
 
 export function mkdir(...filenames: string[]) {

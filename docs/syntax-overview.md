@@ -1,4 +1,4 @@
-# Wolfram Language Syntax Overview
+# Syntax Overview for Wolfram Language
 
 The page introduces the basic syntax of the wolfram language and explains the structure of the syntax files. [*src/syntaxes/simplest.yaml*](../src/syntaxes/simplest.yaml) is a direct implementation of this page.
 
