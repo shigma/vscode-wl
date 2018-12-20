@@ -45,7 +45,7 @@ We also provide a well-commented [source file](src/syntaxes/simplest.yaml) and a
 
 ## Documentations
 
-- [Wolfram Language Syntax Overview](docs/syntax-overview.md)
+- [Syntax Overview for Wolfram Language](docs/syntax-overview.md)
 - [Extended YAML Schema for Syntax Definitions](docs/yaml-schema.md)
 
 ## TODOS

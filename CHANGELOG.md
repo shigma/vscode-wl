@@ -6,7 +6,9 @@
 - **Config:** `wolfram.syntax.smartComments`: Better coloring for comments, support paclet info and styled cells.
 - **Config:** `wolfram.formatter.namedCharacters`: Always use named characters to format files if possible.
 - **Config:** `wolfram.formatter.extendedAscii`: The default method to format extended ASCII characters.
+- **Enhance:** Hovering over symbols in comments and strings will not trigger documentation any more.
 - **Enhance:** Support more named characters in syntax definitions. (1008 -> 1048)
+- **Enhance:** Optimize documentation layout.
 
 ## v1.5
 
