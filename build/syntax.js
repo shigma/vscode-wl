@@ -20,7 +20,7 @@ program
 const isDev = !!program.development
 const BASIC_SYNTAX = 'basic.yaml'
 const TYPES_DIR = util.fullPath('build/types')
-const SYNTAX_DIR = util.fullPath('src/syntaxes')
+const SYNTAX_DIR = util.fullPath('syntaxes')
 
 wordList.named_characters = require('../out/resources/characters').map(item => item[1])
 
