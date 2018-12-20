@@ -1,6 +1,6 @@
 import * as fs from 'fs'
-import * as util from '.'
-import * as Syntax from './syntax'
+import * as util from '../utilities'
+import * as Syntax from '.'
 import minifySyntax from './minifySyntax'
 import Traverser, { TraverseOptions } from './traverser'
 
@@ -13,7 +13,6 @@ interface EmbedOptions {
 class EmbedTraverser extends Traverser {
   constructor(options: EmbedOptions) {
     const insertion = '.' + options.name
-    const endPostfix = `|(?=${escape})`
     super({
       onRegex: options.onRegex,
       onName: name => name.replace(
@@ -57,7 +56,7 @@ export default function mergeSyntax(base: Syntax.BaseSyntax, syntaxes: Syntax.Sy
   })
 
   function parseExternalInclude(this: Traverser, name: string): Syntax.Rule {
-    const extPath = util.vscPath('resources/app/extensions', name.match(/\.(\w+)$/)[1])
+    const extPath = util.vscPath('extensions', name.match(/\.(\w+)$/)[1])
     try {
       const { contributes } = require(extPath + '/package.json')
       const lang = contributes.grammars.find(({ scopeName }) => scopeName === name)

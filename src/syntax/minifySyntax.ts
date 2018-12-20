@@ -1,6 +1,6 @@
 import DepSet from './depSet'
 import Traverser from './traverser'
-import { Rule, Repository } from './syntax'
+import { Rule, Repository } from '.'
 
 export default function minifySyntax(patterns: Rule[], repository: Repository) {
   /** dependencies for all repositories */

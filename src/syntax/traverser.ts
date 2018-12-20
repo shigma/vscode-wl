@@ -1,4 +1,4 @@
-import * as Syntax from './syntax'
+import * as Syntax from '.'
 
 type CapturesType = 'captures' | 'beginCaptures' | 'endCaptures'
 type NameType = 'name' | 'contentName' | CapturesType
