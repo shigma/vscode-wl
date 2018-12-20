@@ -9,6 +9,10 @@ export function showMessage(message: string, callback?: () => void) {
   }
 }
 
+export function showError(error: string | Error) {
+  vscode.window.showErrorMessage(error.toString())
+}
+
 export function editorCommand(callback: (editor: vscode.TextEditor) => void) {
   return function() {
     const editor = vscode.window.activeTextEditor

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import mergeSyntax from '../utilities/mergeSyntax'
+import mergeSyntax from '../syntax/mergeSyntax'
 import { showMessage } from '../utilities/vsc-utils'
 
 function getCurrentPlugins() {
