@@ -1,10 +1,8 @@
 import * as vscode from 'vscode'
-import * as path from 'path'
-import * as fs from 'fs'
-import textmate, * as tm from './textmate'
-import DocumentWatcher from './document'
-import { showMessage, showError } from '../utilities/vsc-utils'
+import * as textmate from './textmate'
 import * as extension from './extension'
+import DocumentWatcher from './document'
+import { showError } from '../utilities/vsc-utils'
 
 let activated = false
 function wrapAPI<T extends (...args: any[]) => any>(callback: T) {
@@ -18,23 +16,35 @@ function wrapAPI<T extends (...args: any[]) => any>(callback: T) {
   }) as T
 }
 
-let textMateRegistry: tm.Registry
+let registry: textmate.Registry
 let documents = new class DocumentMap extends Map<vscode.Uri, DocumentWatcher> {
-  async open(document: vscode.TextDocument) {
-    try {
-      const watcher = this.get(document.uri)
-      if (watcher) {
-        watcher.refresh()
-      } else if (textMateRegistry) {
-        const scopeName = getScopeForLanguage(document.languageId)
-        if (!scopeName) return
-        const grammar = await textMateRegistry.loadGrammar(scopeName)
-        this.set(document.uri, new DocumentWatcher(document, grammar))
+  constructor(private _languages: string[] = null){
+    super()
+  }
+
+  filter(languages: string[] | null) {
+    this._languages = languages
+    vscode.workspace.textDocuments.forEach(d => this.open(d, false))
+  }
+
+  async open(document: vscode.TextDocument, refresh = true) {
+    const { uri, languageId } = document
+    const watcher = this.get(uri)
+    const valid = this._languages ? this._languages.includes(languageId) : true
+    if (watcher) {
+      if (valid) {
+        if (refresh) watcher.refresh()
       } else {
-        throw new Error('No textmate registry.')
+        watcher.dispose()
+        this.delete(uri)
       }
-    } catch (err) {
-      showError(err)
+    } else {
+      if (!valid) return
+      const scopeName = getScopeForLanguage(languageId)
+      if (!scopeName) return
+      if (!registry) throw new Error('No textmate registry.')
+      const grammar = await registry.loadGrammar(scopeName)
+      this.set(uri, new DocumentWatcher(document, grammar))
     }
   }
 
@@ -51,7 +61,7 @@ let documents = new class DocumentMap extends Map<vscode.Uri, DocumentWatcher> {
     }
     this.clear()
   }
-}()
+}(['wolfram'])
 
 export function getScopeForLanguage(languageId: string): string {
   const languages = extension.getResources('grammars').filter(g => g.language === languageId)
@@ -65,37 +75,23 @@ export const getScopeAt = wrapAPI((document: vscode.TextDocument, position: vsco
 })
 
 export const getGrammar = wrapAPI((scopeName: string) => {
-  return textMateRegistry.loadGrammar(scopeName)
+  return registry.loadGrammar(scopeName)
 })
 
-export default function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(d => documents.open(d)))
   context.subscriptions.push(vscode.workspace.onDidCloseTextDocument(d => documents.close(d)))
-
-  reloadGrammar()
+  reload()
+  activated = true
 }
 
-/** Re-read the settings and recreate substitutions for all documents */
-function reloadGrammar() {
-  textMateRegistry = new textmate.Registry({
-    loadGrammar(scopeName: string) {
-      const [grammar] = extension.getResources('grammars', true).filter(g => g.scopeName === scopeName)
-      if (!grammar) return
-      const filepath = path.join(grammar.extensionPath, grammar.path)
-      showMessage(`Scope-info: found grammar for ${scopeName} at ${filepath}`)
-      return new Promise((resolve, reject) => {
-        fs.readFile(filepath, 'utf8', (error, data) => {
-          if (error) reject(error)
-          resolve(tm.parseRawGrammar(data, filepath))
-        })
-      })
-    }
-  })
-
+export function reload() {
+  registry = textmate.reload()
   documents.unload()
   vscode.workspace.textDocuments.forEach(d => documents.open(d))
 }
 
 export function deactivate() {
+  activated = false
   documents.unload()
 }
