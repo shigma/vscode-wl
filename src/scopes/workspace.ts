@@ -58,3 +58,7 @@ export function getScopeAt(document: vscode.TextDocument, position: vscode.Posit
   if (!watcher) return
   return watcher.getScopeAt(position)
 }
+
+export function getGrammar(scopeName: string) {
+  return registry.loadGrammar(scopeName)
+}

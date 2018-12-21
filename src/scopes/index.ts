@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import * as theme from './theme'
 import * as workspace from './workspace'
 import * as extension from './extension'
 import { showError } from '../utilities/vsc-utils'
@@ -20,10 +21,17 @@ export const getGrammar = wrapAPI(extension.getGrammar)
 export const getScopeForLanguage = wrapAPI(extension.getScopeForLanguage)
 
 export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(vscode.workspace.onDidOpenTextDocument(d => workspace.open(d)))
-  context.subscriptions.push(vscode.workspace.onDidCloseTextDocument(d => workspace.close(d)))
+  context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument(d => workspace.open(d)),
+    vscode.workspace.onDidCloseTextDocument(d => workspace.close(d)),
+    vscode.workspace.onDidChangeConfiguration(() => theme.reload()),
+  )
+
+  theme.reload()
   workspace.reload()
   activated = true
+
+  showError(JSON.stringify(theme.getTokenColor('variable.wolfram')))
 }
 
 export function deactivate() {

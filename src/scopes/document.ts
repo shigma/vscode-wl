@@ -9,21 +9,12 @@ export interface ScopeToken {
 }
 
 export default class DocumentWatcher implements vscode.Disposable {
+  /** stores the state for each line */
+  private grammarState : tm.StackElement[] = []
   private subscriptions : vscode.Disposable[] = []
 
-  // Stores the state for each line
-  private grammarState : tm.StackElement[] = []
-  private grammar : tm.IGrammar
-
-  public constructor(doc: vscode.TextDocument, textMateGrammar: tm.IGrammar,
-    private document = doc,
-  ) {
-    this.grammar = textMateGrammar
-
-    // Parse whole document
-    const docRange = new vscode.Range(0,0,this.document.lineCount,0)
-    this.reparsePretties(docRange)
-
+  public constructor(private document: vscode.TextDocument, private grammar: tm.IGrammar) {
+    this.reparsePretties()
     this.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e) => {
       if(e.document == this.document)
         this.onChangeDocument(e)
@@ -58,14 +49,12 @@ export default class DocumentWatcher implements vscode.Disposable {
     return null
   }
 
-  private reparsePretties(range: vscode.Range) : void {
-    range = this.document.validateRange(range)
-
-    const startCharacter = 0
+  private reparsePretties(range?: vscode.Range) : void {
+    range = range
+      ? this.document.validateRange(range)
+      : new vscode.Range(0, 0, this.document.lineCount, 0)
 
     let invalidatedTokenState = false
-
-    // Collect new pretties
     const lineCount = this.document.lineCount
     let lineIdx
     for(lineIdx = range.start.line; lineIdx <= range.end.line || (invalidatedTokenState && lineIdx < lineCount); ++lineIdx) {
@@ -83,7 +72,7 @@ export default class DocumentWatcher implements vscode.Disposable {
         const delta = util.toRangeDelta(change.range, change.text)
         const editRange = util.rangeDeltaNewRange(delta)
 
-        const reparsed = this.reparsePretties(editRange)
+        this.reparsePretties(editRange)
       } catch(e) {
         console.error(e)
       }
@@ -96,7 +85,6 @@ export default class DocumentWatcher implements vscode.Disposable {
 
   public refresh() {
     this.grammarState = []
-    const docRange = new vscode.Range(0,0,this.document.lineCount,0)
-    this.reparsePretties(docRange)
+    this.reparsePretties()
   }
 }
