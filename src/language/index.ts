@@ -67,8 +67,9 @@ function isIdentifierScope(scope: string) {
 
 export const hoverProvider: vscode.HoverProvider = {
   provideHover(document, position, token) {
-    const { scopes } = getScopeAt(document, position)
-    if (!isIdentifierScope(scopes[scopes.length - 1])) return
+    const scopeToken = getScopeAt(document, position)
+    if (!scopeToken) return
+    if (!isIdentifierScope(scopeToken.scopes[scopeToken.scopes.length - 1])) return
     const range = document.getWordRangeAtPosition(position, WORD_PATTERN)
     let word = document.getText(range)
     if (word.startsWith('System`')) word = word.slice(7)

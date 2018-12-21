@@ -1,29 +1,26 @@
 import * as vscode from 'vscode'
 
-// 'sticky' flag is not yet supported :(
 const lineEndingRE = /([^\r\n]*)(\r\n|\r|\n)?/
  
-
 export interface RangeDelta {
   start: vscode.Position
   end: vscode.Position
   linesDelta: number
-  endCharactersDelta: number; // delta for positions on the same line as the end position
+  /** delta for positions on the same line as the end position */
+  endCharactersDelta: number
 }
 
-/**
- * @returns the Position (line, column) for the location (character position)
- */
-function positionAt(text: string, offset: number) : vscode.Position {
-  if(offset > text.length)
-    offset = text.length
+/** get position by offset */
+function positionAt(text: string, offset: number): vscode.Position {
+  if (offset > text.length) offset = text.length
   let line = 0
   let lastIndex = 0
-  while(true) {
+  while (true) {
     const match = lineEndingRE.exec(text.substring(lastIndex))
-    if(lastIndex + match[1].length >= offset)
+    if (lastIndex + match[1].length >= offset) {
       return new vscode.Position(line, offset - lastIndex)
-    lastIndex+= match[0].length
+    }
+    lastIndex += match[0].length
     ++line
   }
 }
@@ -31,10 +28,10 @@ function positionAt(text: string, offset: number) : vscode.Position {
 /**
  * @returns the lines and characters represented by the text
  */
-export function toRangeDelta(oldRange:vscode.Range, text: string) : RangeDelta {
+export function toRangeDelta(oldRange: vscode.Range, text: string): RangeDelta {
   const newEnd = positionAt(text,text.length)
-  let charsDelta
-  if(oldRange.start.line == oldRange.end.line)
+  let charsDelta: number
+  if (oldRange.start.line == oldRange.end.line)
     charsDelta = newEnd.character - (oldRange.end.character-oldRange.start.character)
   else
     charsDelta = newEnd.character - oldRange.end.character
@@ -47,8 +44,8 @@ export function toRangeDelta(oldRange:vscode.Range, text: string) : RangeDelta {
   }
 }
 
-export function rangeDeltaNewRange(delta: RangeDelta) : vscode.Range {
-  let x : number
+export function rangeDeltaNewRange(delta: RangeDelta): vscode.Range {
+  let x: number
   if (delta.linesDelta > 0) 
     x = delta.endCharactersDelta
   else if (delta.linesDelta < 0 && delta.start.line == delta.end.line + delta.linesDelta) 
@@ -58,7 +55,7 @@ export function rangeDeltaNewRange(delta: RangeDelta) : vscode.Range {
   return new vscode.Range(delta.start, new vscode.Position(delta.end.line + delta.linesDelta, x))
 }
 
-function positionRangeDeltaTranslate(pos: vscode.Position, delta: RangeDelta) : vscode.Position {
+function positionRangeDeltaTranslate(pos: vscode.Position, delta: RangeDelta): vscode.Position {
   if(pos.isBefore(delta.end))
     return pos
   else if (delta.end.line == pos.line) {
@@ -73,7 +70,7 @@ function positionRangeDeltaTranslate(pos: vscode.Position, delta: RangeDelta) : 
     return new vscode.Position(pos.line + delta.linesDelta, pos.character)
 }
 
-function positionRangeDeltaTranslateEnd(pos: vscode.Position, delta: RangeDelta) : vscode.Position {
+function positionRangeDeltaTranslateEnd(pos: vscode.Position, delta: RangeDelta): vscode.Position {
   if(pos.isBeforeOrEqual(delta.end))
     return pos
   else if (delta.end.line == pos.line) {
