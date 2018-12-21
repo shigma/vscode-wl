@@ -1,11 +1,11 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { vscPath } from '../utilities'
+import { vscRequire } from '../utilities'
 import * as extension from './extension'
 import * as Textmate from 'vscode-textmate/release/main'
 export * from 'vscode-textmate/release/main'
 
-const textmate: typeof Textmate = require(vscPath('node_modules.asar/vscode-textmate'))
+const textmate: typeof Textmate = vscRequire('vscode-textmate')
 
 /** reload textmate grammars */
 export function reload() {

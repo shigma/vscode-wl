@@ -19,6 +19,10 @@ export function vscPath(...filenames: string[]) {
   return path.resolve(basePath, 'resources/app', ...filenames)
 }
 
+export function vscRequire(filename: string) {
+  return require(vscPath('node_modules.asar', filename))
+}
+
 export function mkdir(...filenames: string[]) {
   const filepath = fullPath(...filenames)
   if (fs.existsSync(filepath)) return

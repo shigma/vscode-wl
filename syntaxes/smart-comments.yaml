@@ -20,9 +20,9 @@ contexts:
     - !cell-style
       target: Input
       patterns: !push expressions.in-comment
-    - !cell-style
-      target: '{{alnum}}+'
-      contentName: variable.other.text.wolfram
+    # - !cell-style
+    #   target: '{{alnum}}+'
+    #   contentName: variable.other.text.wolfram
 
   # special comment syntaxes cannot be embedded in strings and comments
   slot:comments.in-string: []

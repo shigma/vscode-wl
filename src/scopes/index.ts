@@ -30,8 +30,6 @@ export function activate(context: vscode.ExtensionContext) {
   theme.reload()
   workspace.reload()
   activated = true
-
-  showError(JSON.stringify(theme.getTokenColor('variable.wolfram')))
 }
 
 export function deactivate() {

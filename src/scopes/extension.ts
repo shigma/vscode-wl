@@ -3,9 +3,9 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 import * as textmate from './textmate'
 import * as StripComments from 'strip-json-comments'
-import { vscPath } from '../utilities'
+import { vscRequire } from '../utilities'
 
-const stripComments: typeof StripComments = require(vscPath('node_modules.asar/strip-json-comments'))
+const stripComments: typeof StripComments = vscRequire('strip-json-comments')
 
 namespace Contributes {
   export interface Grammar {

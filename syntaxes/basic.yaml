@@ -29,7 +29,7 @@ embedding:
     - comments
     - comment-block
     - literals
-    - boxed
+    - box-form
     - shorthand
     - patterns
     - post-pattern
@@ -45,7 +45,7 @@ embedding:
     - string-template
     - xml-template
     - regular-expression
-    - boxed
+    - box-form
     - shorthand
     - patterns
     - post-pattern
@@ -130,7 +130,7 @@ contexts:
       end: \\\)|(?=")
       name: meta.embedded.string-box.wolfram
       captures: !all keyword.operator.string-box.wolfram
-      patterns: !push boxed.in-string
+      patterns: !push box-form.in-string
     - include: '#string-basic'
 
   string-basic:
@@ -208,11 +208,11 @@ contexts:
       name: constant.character.escape.regexp.wolfram
     - include: '#string-basic'
 
-  boxed:
-    - include: '#boxed-static'
+  box-form:
+    - include: '#box-form-static'
     - include: '#expressions'
   
-  boxed-static:
+  box-form-static:
     - match: \\[%&+_^]
       name: keyword.operator.x-scriptBox.wolfram
     - match: \\/
@@ -380,4 +380,4 @@ contexts:
       end: \\\)
       endCaptures: !all punctuation.section.box.end.wolfram
       name: meta.box.wolfram
-      patterns: !push boxed
+      patterns: !push box-form
