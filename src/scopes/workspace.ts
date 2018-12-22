@@ -29,7 +29,9 @@ export async function open(document: vscode.TextDocument, refresh = true) {
     if (!scopeName) return
     if (!registry) throw new Error('No textmate registry.')
     const grammar = await registry.loadGrammar(scopeName)
-    documents.set(uri, new DocumentWatcher(document, grammar))
+    const watcher = new DocumentWatcher(document, grammar)
+    documents.set(uri, watcher)
+    return watcher
   }
 }
 
@@ -53,12 +55,16 @@ export function reload() {
   vscode.workspace.textDocuments.forEach(d => open(d))
 }
 
-export function getScopeAt(document: vscode.TextDocument, position: vscode.Position) {
-  const watcher = documents.get(document.uri)
-  if (!watcher) return
-  return watcher.getScopeAt(position)
+function wrapAPI<T extends (watcher: DocumentWatcher, ...args: any[]) => any>(callback: T) {
+  return async (
+    document: vscode.TextDocument,
+    ...args: (T extends (watcher: DocumentWatcher, ...args: infer R) => any ? R : any)
+  ) => {
+    const watcher = documents.get(document.uri) || await open(document)
+    return callback(watcher, ...args) as ReturnType<T>
+  }
 }
 
-export function getGrammar(scopeName: string) {
-  return registry.loadGrammar(scopeName)
+export async function getWatcher(document: vscode.TextDocument) {
+  return documents.get(document.uri) || await open(document)
 }

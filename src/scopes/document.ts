@@ -34,16 +34,36 @@ export default class DocumentWatcher implements vscode.Disposable {
   }
 
   public getScopeAt(position: vscode.Position): ScopeToken {
-    if (!this.grammar) return null
+    if (!this.grammar) return
     position = this.document.validatePosition(position)
     const state = this.grammarState[position.line - 1] || null
     const line = this.document.lineAt(position.line)
     const tokens = this.grammar.tokenizeLine(line.text, state)
-    for (let t of tokens.tokens) {
-      if (t.startIndex <= position.character && position.character < t.endIndex)
-        return {range: new vscode.Range(position.line,t.startIndex,position.line,t.endIndex), text: line.text.substring(t.startIndex,t.endIndex), scopes: t.scopes }
+    for (let token of tokens.tokens) {
+      if (token.startIndex <= position.character && position.character < token.endIndex) {
+        return {
+          range: new vscode.Range(position.line, token.startIndex, position.line, token.endIndex),
+          text: line.text.substring(token.startIndex, token.endIndex),
+          scopes: token.scopes
+        }
+      }
     }
-    return null
+  }
+
+  public *getRangeByScope(...scopes: string[]): IterableIterator<vscode.Range> {
+    const scopeSet = new Set(scopes)
+    for (let lineIndex = 0; lineIndex < this.document.lineCount; lineIndex += 1) {
+      const lineText = this.document.lineAt(lineIndex).text
+      const { tokens } = this.grammar.tokenizeLine(lineText, this.grammarState[lineIndex - 1])
+      for (const token of tokens) {
+        for (const scope of token.scopes) {
+          if (scopeSet.has(scope)) {
+            yield new vscode.Range(lineIndex, token.startIndex, lineIndex, token.endIndex)
+            break
+          }
+        }
+      }
+    }
   }
 
   private reparsePretties(range?: vscode.Range) : void {

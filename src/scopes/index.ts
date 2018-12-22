@@ -5,7 +5,7 @@ import * as extension from './extension'
 import { showError } from '../utilities/vsc-utils'
 
 let activated = false
-function wrapAPI<T extends (...args: any[]) => any>(callback: T) {
+function wrapScopeAPI<T extends (...args: any[]) => any>(callback: T) {
   return ((...args) => {
     try {
       if (!activated) throw new Error('API havn\'t been activated.')
@@ -16,9 +16,10 @@ function wrapAPI<T extends (...args: any[]) => any>(callback: T) {
   }) as T
 }
 
-export const getScopeAt = wrapAPI(workspace.getScopeAt)
-export const getGrammar = wrapAPI(extension.getGrammar)
-export const getScopeForLanguage = wrapAPI(extension.getScopeForLanguage)
+export const getWatcher = wrapScopeAPI(workspace.getWatcher)
+
+export const getGrammar = wrapScopeAPI(extension.getGrammar)
+export const getScopeForLanguage = wrapScopeAPI(extension.getScopeForLanguage)
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
