@@ -1,5 +1,11 @@
 # Change Log
 
+## v1.7
+
+- **Feature:** Support color decorators.
+- **Feature:** Support folding cells in Wolfram Packages.
+- **Feature:** Support diagnostics and code actions on characters.
+
 ## v1.6
 
 - **Command:** `wolfram.formatWithASCII`: Format file with ASCII encoding.

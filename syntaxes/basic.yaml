@@ -84,7 +84,7 @@ contexts:
     - match: \\\[({{named_characters}})\]
       name: constant.character.built-in.wolfram
     - match: \\\[\w+\]
-      name: invalid.character.built-in.wolfram
+      name: constant.character.built-in.wolfram invalid.character.built-in.wolfram
 
   literals:
     - include: '#literal-static'

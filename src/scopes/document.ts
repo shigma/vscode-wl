@@ -33,6 +33,21 @@ export default class DocumentWatcher implements vscode.Disposable {
     return {tokens: lineTokens.tokens, invalidated: invalidated}
   }
 
+  public *getRangeByRegex(regex: RegExp): IterableIterator<vscode.Range> {
+    let index = 0, text = this.document.getText()
+    while (text) {
+      const match = text.match(regex)
+      if (!match) break
+      const delta = match.index + match[0].length
+      text = text.substring(delta)
+      index += delta
+      yield new vscode.Range(
+        this.document.positionAt(index - match[0].length),
+        this.document.positionAt(index),
+      )
+    }
+  }
+
   public getScopeAt(position: vscode.Position): ScopeToken {
     if (!this.grammar) return
     position = this.document.validatePosition(position)

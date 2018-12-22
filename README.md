@@ -6,6 +6,7 @@
 
 - All syntaxes from Wolfram Language.
 - Updated documentations and completions.
+- Color provider, diagnostics, ...
 
 Demostration files can be seen under the *demo* folder.
 
