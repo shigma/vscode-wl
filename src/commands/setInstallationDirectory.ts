@@ -10,5 +10,5 @@ export function setInstallationDirectory(global?: boolean) {
   })
 }
 
-const config = vscode.workspace.getConfiguration('wolfram')
-if (!config.get('installationDirectory')) setInstallationDirectory(true)
+// const config = vscode.workspace.getConfiguration('wolfram')
+// if (!config.get('installationDirectory')) setInstallationDirectory(true)
