@@ -14,7 +14,7 @@ export const namespace: string[] = [
 class UsageItem extends Array<vscode.MarkdownString> {
   readyForNextBlock = false
   documentation = new vscode.MarkdownString()
-  
+
   constructor() {
     super(new vscode.MarkdownString())
   }

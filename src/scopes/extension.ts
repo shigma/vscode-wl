@@ -2,10 +2,10 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as vscode from 'vscode'
 import * as textmate from './textmate'
-import * as StripComments from 'strip-json-comments'
+import stripJsonComments from 'strip-json-comments'
 import { vscRequire } from '../utilities'
 
-const stripComments: typeof StripComments = vscRequire('strip-json-comments')
+// const stripJsonComments: typeof StripComments = vscRequire('strip-json-comments')
 
 namespace Contributes {
   export interface Grammar {
@@ -17,12 +17,12 @@ namespace Contributes {
       [scopeName: string]: string
     }
   }
-  
+
   export interface Language {
     id: string
     configuration: string
   }
-  
+
   export interface Theme {
     label: string
     uiTheme: string
@@ -90,7 +90,7 @@ export function getGrammar(scopeName: string) {
   const [grammar] = getResources('grammars').filter(g => g.scopeName === scopeName)
   if (!grammar) return
   const filepath = path.join(grammar.extensionPath, grammar.path)
-  grammar.data = JSON.parse(stripComments(fs.readFileSync(filepath, 'utf8')))
+  grammar.data = JSON.parse(stripJsonComments(fs.readFileSync(filepath, 'utf8')))
   return grammar
 }
 
@@ -98,6 +98,6 @@ export function getTheme(label: string) {
   const [theme] = getResources('themes').filter(g => g.label === label)
   if (!theme) return
   const filepath = path.join(theme.extensionPath, theme.path)
-  theme.data = JSON.parse(stripComments(fs.readFileSync(filepath, 'utf8')))
+  theme.data = JSON.parse(stripJsonComments(fs.readFileSync(filepath, 'utf8')))
   return theme
 }

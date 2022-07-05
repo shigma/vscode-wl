@@ -209,6 +209,7 @@ Compound:
 
 Function:
   &     Function
+  |->   Function
 
 Definition:
   ?     Definition

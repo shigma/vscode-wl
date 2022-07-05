@@ -10,7 +10,7 @@ const textmate: typeof Textmate = vscRequire('vscode-textmate')
 /** reload textmate grammars */
 export function reload() {
   const grammars = extension.getResources('grammars', true)
-  return new textmate.Registry({
+  const options = {
     loadGrammar(scopeName: string) {
       const [grammar] = grammars.filter(g => g.scopeName === scopeName)
       if (!grammar) return
@@ -22,5 +22,7 @@ export function reload() {
         })
       })
     }
-  })
+  };
+  //@ts-ignore
+  return new textmate.Registry(options);
 }

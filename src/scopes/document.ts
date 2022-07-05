@@ -10,12 +10,13 @@ export interface ScopeToken {
 
 export default class DocumentWatcher implements vscode.Disposable {
   /** stores the state for each line */
-  private grammarState : tm.StackElement[] = []
-  private subscriptions : vscode.Disposable[] = []
+  private grammarState: tm.StackElement[] = []
+  private subscriptions: vscode.Disposable[] = []
 
   public constructor(private document: vscode.TextDocument, private grammar: tm.IGrammar) {
     this.reparsePretties()
     this.subscriptions.push(vscode.workspace.onDidChangeTextDocument((e) => {
+      //@ts-ignore
       if (e.document == this.document) this.applyChanges(e.contentChanges)
     }))
   }
@@ -24,13 +25,13 @@ export default class DocumentWatcher implements vscode.Disposable {
     this.subscriptions.forEach(s => s.dispose())
   }
 
-  private refreshTokensOnLine(line: vscode.TextLine) : {tokens: tm.IToken[], invalidated: boolean} {
-    if (!this.grammar) return {tokens: [], invalidated: false}
-    const prevState = this.grammarState[line.lineNumber-1] || null
+  private refreshTokensOnLine(line: vscode.TextLine): { tokens: tm.IToken[], invalidated: boolean } {
+    if (!this.grammar) return { tokens: [], invalidated: false }
+    const prevState = this.grammarState[line.lineNumber - 1] || null
     const lineTokens = this.grammar.tokenizeLine(line.text, prevState)
     const invalidated = !this.grammarState[line.lineNumber] || !lineTokens.ruleStack.equals(this.grammarState[line.lineNumber])
     this.grammarState[line.lineNumber] = lineTokens.ruleStack
-    return {tokens: lineTokens.tokens, invalidated: invalidated}
+    return { tokens: lineTokens.tokens, invalidated: invalidated }
   }
 
   public *getRangeByRegex(regex: RegExp): IterableIterator<vscode.Range> {
@@ -81,7 +82,7 @@ export default class DocumentWatcher implements vscode.Disposable {
     }
   }
 
-  private reparsePretties(range?: vscode.Range) : void {
+  private reparsePretties(range?: vscode.Range): void {
     range = this.document.validateRange(range || new vscode.Range(0, 0, this.document.lineCount, 0))
 
     let invalidatedTokenState = false

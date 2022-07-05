@@ -291,7 +291,7 @@ contexts:
       name: keyword.operator.span.wolfram
     - match: ;
       name: keyword.operator.compound.wolfram
-    - match: '&'
+    - match: '&'|\|->
       name: keyword.operator.function.wolfram entity.name.function.wolfram
     - match: \?\??
       name: keyword.operator.definition.wolfram
