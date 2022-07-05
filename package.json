@@ -9,7 +9,7 @@
   "description": "Wolfram Language support for Visual Studio Code.",
   "version": "1.7.3",
   "engines": {
-    "vscode": "^1.29.0"
+    "vscode": "^1.68.1"
   },
   "categories": [
     "Programming Languages"
@@ -21,8 +21,7 @@
     "build": "node build/syntax",
     "publish": "tsc -b & vsce publish",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install"
+    "watch": "tsc -watch -p ./"
   },
   "activationEvents": [
     "*"
@@ -140,12 +139,12 @@
   },
   "devDependencies": {
     "@types/node": "^10.12.9",
-    "@types/strip-json-comments": "0.0.30",
-    "commander": "^2.19.0",
+    "@types/vscode": "^1.68.1",
+    "@vscode/test-electron": "^2.1.5",
+    "commander": "^9.3.0",
     "js-yaml": "^3.12.0",
-    "strip-json-comments": "^2.0.1",
-    "typescript": "^3.1.6",
-    "vscode": "^1.1.21",
-    "vscode-textmate": "^4.0.1"
+    "strip-json-comments": "^4.0.0",
+    "typescript": "^4.7.4",
+    "vscode-textmate": "^7.0.1"
   }
 }
