@@ -1,24 +1,28 @@
-//@ts-check
-import { mergeSyntax, MacroParser, Traverser } from '../out/utilities/syntax'
+const {
+  mergeSyntax,
+  MacroParser,
+  Traverser,
+} = require('../out/utilities/syntax')
 
-import wordList, { named_characters } from '../dist/macros'
-import { Command, Option, development, simplest, allPlugins } from 'commander'
-import { Schema, Type, load } from 'js-yaml'
-import { fullPath } from './util'
-import { extname, join } from 'path'
-import { readdirSync, readFileSync, writeFileSync } from 'fs'
+const wordList = require('../dist/macros')
+const program = require('commander')
+const yaml = require('js-yaml')
+const util = require('./util')
+const path = require('path')
+const fs = require('fs')
 
-new Command('-d, --development')
+program
+  .option('-d, --development')
   .option('-s, --simplest')
   .option('-a, --all-plugins')
   .parse(process.argv)
 
-const isDev = !!development
+const isDev = !!program.development
 const BASIC_SYNTAX = 'basic.yaml'
-const TYPES_DIR = fullPath('build/types')
-const SYNTAX_DIR = fullPath('syntaxes')
+const TYPES_DIR = util.fullPath('build/types')
+const SYNTAX_DIR = util.fullPath('syntaxes')
 
-named_characters = require('../out/resources/characters').map(item => item[1])
+wordList.named_characters = require('../out/resources/characters').map(item => item[1])
 
 const macros = {}
 for (const key in wordList) {
@@ -27,10 +31,10 @@ for (const key in wordList) {
 
 const macroParser = new MacroParser(macros)
 
-const schema = Schema(
-  readdirSync(TYPES_DIR)
-    .filter(name => extname(name) === '.js')
-    .map(name => new Type('!' + name.slice(0, -3), require(join(TYPES_DIR, name))))
+const schema = yaml.Schema.create(
+  fs.readdirSync(TYPES_DIR)
+    .filter(name => path.extname(name) === '.js')
+    .map(name => new yaml.Type('!' + name.slice(0, -3), require(path.join(TYPES_DIR, name))))
 )
 
 const syntaxes = {}
@@ -38,8 +42,8 @@ const defaultPlugins = []
 
 function parseContexts(filename) {
   const name = filename.slice(0, -5)
-  const syntax = syntaxes[name] = load(
-    readFileSync(join(SYNTAX_DIR, filename)),
+  const syntax = syntaxes[name] = yaml.safeLoad(
+    fs.readFileSync(path.join(SYNTAX_DIR, filename)),
     { schema },
   )
   syntax._name = name
@@ -77,8 +81,8 @@ function parseContexts(filename) {
     }
   }
 
-  writeFileSync(
-    fullPath('out/syntaxes', name + '.json'),
+  fs.writeFileSync(
+    util.fullPath('out/syntaxes', name + '.json'),
     isDev ? JSON.stringify(syntax, null, 2) : JSON.stringify(syntax),
   )
 
@@ -87,17 +91,18 @@ function parseContexts(filename) {
 
 [
   BASIC_SYNTAX,
-  ...readdirSync(fullPath(SYNTAX_DIR))
+  ...fs
+    .readdirSync(util.fullPath(SYNTAX_DIR))
     .filter(name => name !== BASIC_SYNTAX)
 ].map(parseContexts)
 
-const base = simplest ? 'simplest' : 'basic'
+const base = program.simplest ? 'simplest' : 'basic'
 const plugins = Array.from(function* (names) {
   for (const name of names) {
     if (name in syntaxes && name !== 'simplest' && name !== 'basic') {
       yield syntaxes[name]
     }
   }
-}(allPlugins ? Object.keys(syntaxes) : defaultPlugins))
+}(program.allPlugins ? Object.keys(syntaxes) : defaultPlugins))
 
 mergeSyntax(syntaxes[base], plugins, isDev)
